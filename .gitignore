@@ -1,0 +1,11 @@
+.vercel
+.env
+.env.local
+node_modules
+.env*.local
+
+# Redundant nested copy of this project (accidental duplicate in images/)
+images/blog/Namwonja Blog/
+
+# Corrupted/incomplete git directory backup (not part of the project)
+.git-broken-backup/
