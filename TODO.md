@@ -1,24 +1,35 @@
-# Namwonja Heritage Journal — Admin Dashboard & Git Repo
+# Admin Dashboard Fix Plan — Status
 
-## Status: Complete ✓
+## ✅ Completed
 
-### Admin Dashboard Improvements
-- ✅ Rich-text (WYSIWYG) editor + Preview toggle for story content
-- ✅ CSV Export for Stories, Comments, Messages, and Donations
-- ✅ "Estimated" badges on analytics KPIs (honest labeling of approximated data)
-- ✅ Keyboard shortcuts for power users
-- ✅ Backend API (`/api/admin-data.js`) for Authors, Contributors, Users, Roles, Settings
-- ✅ Fixed admin layout double-offset gap between sidebar and content
+### 1. Rich-text editor + Preview for story content
+- Replaced plain HTML `<textarea>` with a WYSIWYG toolbar + contenteditable editor (`storyContentRte`).
+- Added **Preview/Edit** toggle to see rendered content before publishing.
+- Editor syncs back into hidden `storyContent` textarea on save; stores HTML in `content_html`.
+- CSS: `.rte-wrap`, `.rte-toolbar`, `.rte-btn`, `.rte-editor`, `.rte-preview` added.
 
-### Git Repository Repair
-- ✅ Detected the project's `.git` was corrupted/incomplete (missing `HEAD`, `refs`, `config`)
-- ✅ Backed up the broken `.git` and re-initialized a clean repo rooted at the project directory
-- ✅ Manually committed the whole project (initial commit `bc35212`, 120 files)
-- ✅ Removed the broken backup directory
-- ✅ Repo is on branch `main`, no remote configured yet
+### 2. CSV Export for all data tables
+- Added **Export CSV** buttons to Stories, Comments, Messages, and Donations sections.
+- Implemented client-side CSV generation + download (`exportCSV` / `initExports`).
 
-## Next Steps (optional)
-- Add a remote (e.g. GitHub) and push: `git remote add origin <url>` then `git push -u origin main`
-- Run the updated `fix-supabase-schema.sql` in Supabase
-- Test the admin dashboard in the browser
+### 3. Label estimated analytics honestly
+- Added an **"estimated" badge** to the Today's Visitors KPI with a tooltip clarifying no analytics backend is connected.
+
+### 4. Keyboard shortcuts
+- `Ctrl+N` = New Story.
+- `Ctrl+1..4` = jump to Dashboard/Stories/Comments/Messages.
+
+### 5. Real backend for placeholder modules (Authors, Contributors, Users, Roles, Settings)
+- Created `/api/admin-data.js` handling these against Supabase tables (with graceful fallback to empty arrays / localStorage when tables are missing).
+- Added schema tables to `fix-supabase-schema.sql`: `authors`, `contributors`, `admin_users`, `admin_roles`, `site_settings`, `audit_log` + default role seeding + RLS.
+- Updated `admin.js` to fetch from the API with localStorage fallback.
+
+### 6. Fixed seed-stories.sql column/value mismatch
+- Reverted the heritage-story entry to the 8-column INSERT (matching the 8-column column list).
+- Added a separate `UPDATE ... SET content_html = $story$...$story$` (dollar-quoted) for the heritage-story so the editor shows real content.
+
+## Follow-up (for the user)
+- Run `fix-supabase-schema.sql` in Supabase SQL Editor (creates admin support tables).
+- Run `seed-stories.sql` to seed stories + populate heritage-story content.
+- Test the admin dashboard in a browser.
 </content>
