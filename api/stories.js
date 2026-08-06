@@ -76,13 +76,22 @@ module.exports = async function handler(req, res) {
       const { slug } = req.query || {};
       if (!slug) { json(res, 400, { error: 'slug query param required' }); return; }
       const body = await readBody(req);
-      const { data, error } = await supabase
+
+      const { error } = await supabase
         .from('stories')
         .update({ ...body, updated_at: new Date().toISOString() })
-        .eq('slug', slug)
-        .select()
-        .maybeSingle();
+        .eq('slug', slug);
+
       if (error) throw error;
+
+      const { data, error: fetchError } = await supabase
+        .from('stories')
+        .select('*')
+        .eq('slug', slug)
+        .maybeSingle();
+
+      if (fetchError) throw fetchError;
+
       json(res, 200, data || { ok: true });
       return;
     }

@@ -458,7 +458,13 @@ document.getElementById("storyForm").addEventListener("submit", function (e) {
       var method = editing ? "PUT" : "POST";
 
       fetch(url, { method: method, headers: authHeaders(), body: JSON.stringify(payload) })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          console.log("[admin] Save response status:", r.status);
+          return r.json().then(function (data) {
+            console.log("[admin] Save response data:", data);
+            return data;
+          });
+        })
         .then(function (data) {
           if (data.error) { toast(data.error, "error"); return; }
           var modalEl = document.getElementById("storyModal");
@@ -466,9 +472,10 @@ document.getElementById("storyForm").addEventListener("submit", function (e) {
           if (modal) modal.hide();
           clearUploadStatus();
           toast(editing ? "Story updated." : "Story created.", "success");
+          console.log("[admin] Reloading stories list...");
           loadAdmin("stories");
         })
-        .catch(function () { toast("Could not save story", "error"); });
+        .catch(function (err) { console.error("[admin] Save failed:", err); toast("Could not save story", "error"); });
     });
 
  function openStoryEditor(story) {
@@ -646,7 +653,13 @@ function initPlaceholderSections() {
       if (el) el.innerHTML = '<div class="admin-loading"><div class="spinner-border" role="status"></div></div>';
 
       fetch("/api/admin?type=" + type, { headers: authHeaders() })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          console.log("[admin] loadAdmin", type, "status:", r.status);
+          return r.json().then(function (data) {
+            console.log("[admin] loadAdmin", type, "data count:", Array.isArray(data) ? data.length : "N/A", "first item:", Array.isArray(data) && data[0] ? { slug: data[0].slug, title: data[0].title, updated_at: data[0].updated_at } : data);
+            return data;
+          });
+        })
         .then(function (data) {
           if (data.error) { console.error(data.error); toast(data.error, "error"); return; }
           var rows = data || [];
@@ -657,7 +670,7 @@ function initPlaceholderSections() {
           renderCharts();
           renderMedia();
         })
-        .catch(function (e) { console.error(e); toast("Failed to load " + type, "error"); });
+        .catch(function (e) { console.error("[admin] loadAdmin failed:", e); toast("Failed to load " + type, "error"); });
     }
 
     // ============================================================
