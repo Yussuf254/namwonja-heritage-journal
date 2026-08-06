@@ -63,8 +63,9 @@ module.exports = async function handler(req, res) {
           is_published: is_published !== false
         }])
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) { json(res, 500, { error: 'Failed to create story' }); return; }
       json(res, 201, data);
       return;
     }
@@ -80,8 +81,9 @@ module.exports = async function handler(req, res) {
         .update({ ...body, updated_at: new Date().toISOString() })
         .eq('slug', slug)
         .select()
-        .single();
+        .maybeSingle();
       if (error) throw error;
+      if (!data) { json(res, 404, { error: 'Story not found' }); return; }
       json(res, 200, data);
       return;
     }
