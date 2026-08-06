@@ -204,12 +204,33 @@
   function initSidebar() {
     var toggle = document.querySelector(".sidebar-toggle");
     var sidebar = document.getElementById("adminSidebar");
-    if (!toggle || !sidebar) return;
-    toggle.addEventListener("click", function () {
-      sidebar.classList.toggle("show");
-      var expanded = sidebar.classList.contains("show");
-      toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-    });
+    var overlay = document.getElementById("adminSidebarOverlay");
+    var closeBtn = document.getElementById("adminSidebarClose");
+    if (!sidebar) return;
+
+    function openSidebar() {
+      sidebar.classList.add("show");
+      if (overlay) overlay.classList.add("show");
+      if (toggle) toggle.setAttribute("aria-expanded", "true");
+    }
+    function closeSidebar() {
+      sidebar.classList.remove("show");
+      if (overlay) overlay.classList.remove("show");
+      if (toggle) toggle.setAttribute("aria-expanded", "false");
+    }
+
+    if (toggle) {
+      toggle.addEventListener("click", function () {
+        if (sidebar.classList.contains("show")) closeSidebar();
+        else openSidebar();
+      });
+    }
+    if (overlay) {
+      overlay.addEventListener("click", closeSidebar);
+    }
+    if (closeBtn) {
+      closeBtn.addEventListener("click", closeSidebar);
+    }
   }
 
   // ---- Update page header from active section data attrs ----
