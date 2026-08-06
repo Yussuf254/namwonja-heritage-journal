@@ -471,13 +471,13 @@ document.getElementById("storyForm").addEventListener("submit", function (e) {
         .catch(function () { toast("Could not save story", "error"); });
     });
 
-function openStoryEditor(story) {
+ function openStoryEditor(story) {
       document.getElementById("storyForm").setAttribute("data-editing", story ? "true" : "false");
       document.getElementById("storyModalTitle").textContent = story ? "Edit Story" : "New Story";
       document.getElementById("storySlug").value = story ? story.slug : "";
       document.getElementById("storyTitle").value = story ? story.title : "";
       document.getElementById("storyExcerpt").value = story ? story.excerpt || "" : "";
-      var content = story ? story.content_html || "" : "";
+      var content = story ? (story.content_html || "") : "";
       document.getElementById("storyContent").value = content;
       var rte = document.getElementById("storyContentRte");
       if (rte) rte.innerHTML = content;
@@ -490,9 +490,30 @@ function openStoryEditor(story) {
       setCoverPreview(story && story.cover_image ? story.cover_image : null);
       clearUploadStatus();
       if (coverFile) coverFile.value = "";
+      var contentTabBtn = document.getElementById("content-tab");
+      if (contentTabBtn) {
+        var tab = bootstrap.Tab.getOrCreateInstance(contentTabBtn);
+        if (tab) tab.show();
+      }
       var modalEl = document.getElementById("storyModal");
       var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
       modal.show();
+      if (story && !content && story.slug) {
+        fetch("/api/stories?slug=" + encodeURIComponent(story.slug))
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            var rows = data || [];
+            var fetched = rows.find(function (s) { return s.slug === story.slug; });
+            if (fetched && fetched.content_html) {
+              document.getElementById("storyContent").value = fetched.content_html;
+              var rteEl = document.getElementById("storyContentRte");
+              if (rteEl) rteEl.innerHTML = fetched.content_html;
+              var prevEl = document.getElementById("rtePreview");
+              if (prevEl) prevEl.innerHTML = fetched.content_html;
+            }
+          })
+          .catch(function () {});
+      }
     }
 
     // ============================================================
@@ -2475,6 +2496,7 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
       document.getElementById("adminLogin").style.display = "none";
       document.getElementById("adminPanel").style.display = "block";
       document.body.classList.remove("login-mode");
+      updateSectionHeader("dashboard");
     }
   });
 })();

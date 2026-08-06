@@ -465,9 +465,17 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 18px;
+  gap: 14px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 20px;
+  position: sticky;
+  top: 60px;
+  z-index: 100;
+  background: color-mix(in srgb, var(--admin-paper) 92%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  padding: 18px 4px 12px;
+  border-bottom: 1px solid var(--admin-line-soft);
 }
 .admin-welcome {
   display: inline-flex;
@@ -583,9 +591,9 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 .admin-section-head + .admin-toolbar,
 .admin-section-head + .admin-stats,
