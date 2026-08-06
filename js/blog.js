@@ -48,10 +48,14 @@
 
     document.getElementById("commentsSection").setAttribute("data-story", slug);
 
-    fetch("/api/stories?slug=" + encodeURIComponent(slug))
-      .then(function (r) { return r.json(); })
+    fetch("/api/stories?slug=" + encodeURIComponent(slug) + "&_=" + Date.now())
+      .then(function (r) {
+        console.log("[blog.js] API response status:", r.status, "for slug:", slug);
+        return r.json();
+      })
       .then(function (res) {
         var story = Array.isArray(res) ? res[0] : res;
+        console.log("[blog.js] Fetched story:", story ? { slug: story.slug, title: story.title, hasContent: !!story.content_html, contentLength: (story.content_html || "").length } : "NOT FOUND");
         if (!story || story.error) {
           document.getElementById("storyTitle").textContent = "Story not found";
           var c2 = document.getElementById("storyContent");
