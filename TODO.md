@@ -13,6 +13,11 @@ Root cause: Public story pages are static `.html` files with hardcoded content. 
 - [x] Created **`backfill-story-content.sql`** — a clean, paste-ready SQL file using dollar-quoting that backfills `content_html` for all 12 stories.
 - [ ] Open Supabase → SQL Editor → paste the **entire** contents of `backfill-story-content.sql` → Run.
 
-## Follow-up
-- [ ] Deploy and hard-refresh public pages.
+## Deployed
+- [x] Committed changes, pushed to GitHub (`main`, 6ba44fc).
+- [x] Deployed to Vercel production: https://namwonja-heritage-journal.vercel.app
+
+## Follow-up (manual data step still required)
+- [ ] Run `backfill-story-content.sql` (or `migrate-story-content.sql`) in **Supabase → SQL Editor** so all 12 stories have `content_html` populated. Without this, existing rows have no body content to render.
+- [ ] Hard-refresh (Ctrl+Shift+R) the public pages to clear cached static HTML.
 - [ ] Verify an admin edit to an old story now reflects its body on the main site.
