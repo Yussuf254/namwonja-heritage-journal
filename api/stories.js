@@ -55,12 +55,14 @@ module.exports = async function handler(req, res) {
       const { slug, title, excerpt, content_html, category, cover_image, author, is_published } = body;
       if (!slug || !title) { json(res, 400, { error: 'slug and title are required' }); return; }
 
+      const now = new Date().toISOString();
       const { data, error } = await supabase
         .from('stories')
         .insert([{
           slug, title, excerpt, content_html, category,
           cover_image, author: author || 'Namwonja Heritage Journal',
-          is_published: is_published !== false
+          is_published: is_published !== false,
+          published_at: now, created_at: now
         }])
         .select()
         .maybeSingle();
@@ -77,12 +79,17 @@ module.exports = async function handler(req, res) {
       if (!slug) { json(res, 400, { error: 'slug query param required' }); return; }
       const body = await readBody(req);
 
+      console.log('[stories-api] PUT update slug:', slug, 'body keys:', Object.keys(body));
+
       const { error } = await supabase
         .from('stories')
         .update({ ...body, updated_at: new Date().toISOString() })
         .eq('slug', slug);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[stories-api] PUT update error:', error);
+        throw error;
+      }
 
       const { data, error: fetchError } = await supabase
         .from('stories')
@@ -90,8 +97,12 @@ module.exports = async function handler(req, res) {
         .eq('slug', slug)
         .maybeSingle();
 
-      if (fetchError) throw fetchError;
+      if (fetchError) {
+        console.error('[stories-api] PUT fetch error:', fetchError);
+        throw fetchError;
+      }
 
+      console.log('[stories-api] PUT response data:', data ? { slug: data.slug, title: data.title, updated_at: data.updated_at, hasContent: !!data.content_html } : 'NO DATA');
       json(res, 200, data || { ok: true });
       return;
     }
