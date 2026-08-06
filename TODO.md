@@ -1,35 +1,18 @@
-# Admin Dashboard Fix Plan — Status
+# Admin edits reflecting on main website — Fix Plan Status
 
-## ✅ Completed
+## ✅ Analyzed
+Root cause: Public story pages are static `.html` files with hardcoded content. `js/blog.js` only replaces the article body from the DB when `content_html` is non-empty, so old stories whose DB rows lack `content_html` keep showing stale static text — admin edits don't appear.
 
-### 1. Rich-text editor + Preview for story content
-- Replaced plain HTML `<textarea>` with a WYSIWYG toolbar + contenteditable editor (`storyContentRte`).
-- Added **Preview/Edit** toggle to see rendered content before publishing.
-- Editor syncs back into hidden `storyContent` textarea on save; stores HTML in `content_html`.
-- CSS: `.rte-wrap`, `.rte-toolbar`, `.rte-btn`, `.rte-editor`, `.rte-preview` added.
+## Completed
+- [x] `js/blog.js`: Make rendering DB-first — always render title/excerpt/date/author/image from DB, and always replace the article body from `content_html` (or show a clear "no content" state) so stale hardcoded text is never shown.
+- [x] `js/blog.js`: Added fallbacks for the profile pages (different hero markup) — updates the first H1, meta description, and the hero/figure `<img>` + og:image when the standard `storyTitle`/`storyFigureImg` ids are absent.
+- [x] `js/stories.js`: Keep grids fully DB-driven and only fall back to static cards on a genuine API failure (not masking DB edits). Added cache-busting to `/api/stories` so grids never show stale DB content.
+- [x] `api/_lib/supabase.js`: Added `Cache-Control: no-store` + `Pragma: no-cache` + `Expires: 0` to all API responses so Vercel doesn't serve stale cached stories after admin edits.
 
-### 2. CSV Export for all data tables
-- Added **Export CSV** buttons to Stories, Comments, Messages, and Donations sections.
-- Implemented client-side CSV generation + download (`exportCSV` / `initExports`).
+## Prerequisite (data) — READY TO PASTE
+- [x] Created **`backfill-story-content.sql`** — a clean, paste-ready SQL file using dollar-quoting that backfills `content_html` for all 12 stories.
+- [ ] Open Supabase → SQL Editor → paste the **entire** contents of `backfill-story-content.sql` → Run.
 
-### 3. Label estimated analytics honestly
-- Added an **"estimated" badge** to the Today's Visitors KPI with a tooltip clarifying no analytics backend is connected.
-
-### 4. Keyboard shortcuts
-- `Ctrl+N` = New Story.
-- `Ctrl+1..4` = jump to Dashboard/Stories/Comments/Messages.
-
-### 5. Real backend for placeholder modules (Authors, Contributors, Users, Roles, Settings)
-- Created `/api/admin-data.js` handling these against Supabase tables (with graceful fallback to empty arrays / localStorage when tables are missing).
-- Added schema tables to `fix-supabase-schema.sql`: `authors`, `contributors`, `admin_users`, `admin_roles`, `site_settings`, `audit_log` + default role seeding + RLS.
-- Updated `admin.js` to fetch from the API with localStorage fallback.
-
-### 6. Fixed seed-stories.sql column/value mismatch
-- Reverted the heritage-story entry to the 8-column INSERT (matching the 8-column column list).
-- Added a separate `UPDATE ... SET content_html = $story$...$story$` (dollar-quoted) for the heritage-story so the editor shows real content.
-
-## Follow-up (for the user)
-- Run `fix-supabase-schema.sql` in Supabase SQL Editor (creates admin support tables).
-- Run `seed-stories.sql` to seed stories + populate heritage-story content.
-- Test the admin dashboard in a browser.
-</content>
+## Follow-up
+- [ ] Deploy and hard-refresh public pages.
+- [ ] Verify an admin edit to an old story now reflects its body on the main site.

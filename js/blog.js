@@ -63,10 +63,17 @@
           return;
         }
 
-        document.title = story.title + " | Namwonja Heritage Journal";
+document.title = story.title + " | Namwonja Heritage Journal";
 
+        // Title — use the standard element, or fall back to the page's first H1
+        // (covers the profile pages that use a different hero markup).
         var titleEl = document.getElementById("storyTitle");
+        if (!titleEl) titleEl = document.querySelector("h1");
         if (titleEl) titleEl.textContent = story.title;
+
+        // Meta description (helps keep the tab/social preview in sync).
+        var metaDesc = document.querySelector('meta[name="description"]');
+        if (metaDesc) metaDesc.setAttribute("content", story.excerpt || story.title || "");
 
         var excerptEl = document.getElementById("storyExcerpt");
         if (excerptEl) excerptEl.textContent = story.excerpt || "";
@@ -87,11 +94,30 @@
         if (img) {
           img.src = story.cover_image || "images/blog/Paul Khasamba.jpeg";
           img.alt = story.title || "Story cover image";
+        } else {
+          // Profile pages: update the first hero <img> + the og:image meta tag.
+          var heroImg = document.querySelector(".mag-profile-photo img, .mag-story-figure img, figure img");
+          if (heroImg && story.cover_image) {
+            heroImg.src = story.cover_image;
+            heroImg.alt = story.title || "Story cover image";
+          }
+          var ogImg = document.querySelector('meta[property="og:image"]');
+          if (ogImg && story.cover_image) ogImg.setAttribute("content", story.cover_image);
         }
 
-        var content = document.getElementById("storyContent");
-        if (content && story.content_html) {
-          content.innerHTML = story.content_html;
+var content = document.getElementById("storyContent");
+        if (content) {
+          // DB-first rendering: always show the live DB content so admin edits
+          // reflect on the public site. Never leave stale hardcoded HTML on screen.
+          if (story.content_html && story.content_html.trim()) {
+            content.innerHTML = story.content_html;
+          } else {
+            content.innerHTML =
+              '<section class="mag-section"><div class="mag-container">' +
+              '<p class="mag-lead">This story has no body content yet. ' +
+              'An administrator can add content from the <a href="admin.html">Admin dashboard</a>.</p>' +
+              '</div></section>';
+          }
         }
 
         // Share links
