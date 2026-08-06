@@ -15,7 +15,19 @@
 
   function getSlug() {
     var params = new URLSearchParams(window.location.search);
-    return params.get("slug") || "";
+    var qs = params.get("slug");
+    if (qs) return qs;
+
+    var path = window.location.pathname;
+    var file = path.replace(/^.*[\\/]/, "").replace(/\?.*$/, "");
+    if (!file) return "";
+    var slug = file.replace(/\.html?$/i, "");
+    if (!slug) return "";
+
+    var nonStoryPages = ["index", "about", "category", "contact", "support", "admin", "blog"];
+    if (nonStoryPages.indexOf(slug) !== -1) return "";
+
+    return slug;
   }
 
   function fmtDate(s) {
@@ -49,26 +61,41 @@
 
         document.title = story.title + " | Namwonja Heritage Journal";
 
-        document.getElementById("storyTitle").textContent = story.title;
-        document.getElementById("storyExcerpt").textContent = story.excerpt || "";
-        document.getElementById("storyExcerptSide").textContent = story.excerpt || "";
-        document.getElementById("storyDate").textContent = fmtDate(story.published_at || story.created_at);
-        document.getElementById("storyAuthor").textContent = story.author || "Namwonja Heritage Journal";
-        document.getElementById("storyCategoryLink").textContent = story.category || "Story";
+        var titleEl = document.getElementById("storyTitle");
+        if (titleEl) titleEl.textContent = story.title;
+
+        var excerptEl = document.getElementById("storyExcerpt");
+        if (excerptEl) excerptEl.textContent = story.excerpt || "";
+
+        var excerptSideEl = document.getElementById("storyExcerptSide");
+        if (excerptSideEl) excerptSideEl.textContent = story.excerpt || "";
+
+        var dateEl = document.getElementById("storyDate");
+        if (dateEl) dateEl.textContent = fmtDate(story.published_at || story.created_at);
+
+        var authorEl = document.getElementById("storyAuthor");
+        if (authorEl) authorEl.textContent = story.author || "Namwonja Heritage Journal";
+
+        var catEl = document.getElementById("storyCategoryLink");
+        if (catEl) catEl.textContent = story.category || "Story";
 
         var img = document.getElementById("storyFigureImg");
-        img.src = story.cover_image || "images/blog/Paul Khasamba.jpeg";
-        img.alt = story.title;
+        if (img) {
+          img.src = story.cover_image || "images/blog/Paul Khasamba.jpeg";
+          img.alt = story.title || "Story cover image";
+        }
 
-        // Render content HTML (admin-entered). Sanitize links? Keep simple: allow HTML from admin.
         var content = document.getElementById("storyContent");
-        content.innerHTML = story.content_html || "<p></p>";
+        if (content) content.innerHTML = story.content_html || "<p></p>";
 
         // Share links
         var url = encodeURIComponent(window.location.href);
-        document.getElementById("shareFb").setAttribute("href", "https://www.facebook.com/sharer/sharer.php?u=" + url);
-        document.getElementById("shareTw").setAttribute("href", "https://twitter.com/intent/tweet?url=" + url + "&text=" + encodeURIComponent(story.title));
-        document.getElementById("shareWa").setAttribute("href", "https://api.whatsapp.com/send?text=" + encodeURIComponent(story.title) + "%20" + url);
+        var shareFb = document.getElementById("shareFb");
+        if (shareFb) shareFb.setAttribute("href", "https://www.facebook.com/sharer/sharer.php?u=" + url);
+        var shareTw = document.getElementById("shareTw");
+        if (shareTw) shareTw.setAttribute("href", "https://twitter.com/intent/tweet?url=" + url + "&text=" + encodeURIComponent(story.title));
+        var shareWa = document.getElementById("shareWa");
+        if (shareWa) shareWa.setAttribute("href", "https://api.whatsapp.com/send?text=" + encodeURIComponent(story.title) + "%20" + url);
 
         // Initialize reveal animations for newly injected content
         if (window.initMagReveal) {

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8" />
-  <title>Community Story | Namwonja Heritage Journal</title>
+  <title>Story | Namwonja Heritage Journal</title>
   <meta name="description" content="How Namwonja Mukudi's administrative reform transformed Bunyala into a prosperous and cohesive domain." />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -65,23 +65,20 @@
       <div class="mag-container">
         <div class="mag-story-hero-row">
           <div>
-            <a href="category.html" class="mag-kicker">Community · Transformation of Bunyala</a>
-            <h1>Administrative Reform and the Golden Age of Bunyala</h1>
-            <p class="mag-story-standfirst">
-              Namwonja Mukudi restructured the kingdom's organisation to secure consistently superior outcomes,
-              dedicating his authority to elevating the living standards of his subjects and empowering them
-              into leadership roles.
+            <a href="category.html" class="mag-kicker" id="storyCategoryLink">Story</a>
+            <h1 id="storyTitle">Loading story…</h1>
+            <p class="mag-story-standfirst" id="storyExcerpt">
             </p>
             <ul class="mag-story-meta">
-              <li>By <a href="about.html"><strong>Namwonja Heritage Journal</strong></a></li>
+              <li>By <a href="about.html"><strong id="storyAuthor">Namwonja Heritage Journal</strong></a></li>
               <li class="dot" aria-hidden="true"></li>
-              <li><i class="fa fa-clock-o" aria-hidden="true"></i> <span class="mag-date" data-offset="43">June 20, 2026</span></li>
+              <li><i class="fa fa-clock-o" aria-hidden="true"></i> <span id="storyDate"></span></li>
               <li class="dot" aria-hidden="true"></li>
               <li>Cover Story · Section 9 and 10</li>
             </ul>
           </div>
           <figure class="mag-story-figure" data-reveal="zoom">
-            <img src="images/blog/blog (3).jpeg" alt="Community and transformation illustration" loading="eager" />
+            <img id="storyFigureImg" src="images/blog/Paul Khasamba.jpeg" alt="Story cover image" loading="eager" />
           </figure>
           <figcaption class="mag-editorial-caption">A Prosperous and Cohesive Domain</figcaption>
         </div>
@@ -114,75 +111,7 @@
           </aside>
 
           <!-- Magazine Feature Article -->
-          <article class="mag-article">
-            <section id="section-reform" data-section="section-reform">
-              <h2><span class="sec-num">Chapter 01</span>Administrative Reform</h2>
-              <p class="mag-lead">Namwonja Mukudi restructured the kingdom's organisational architecture to secure consistently superior outcomes.</p>
-              <p>
-                His reforms were not aimed at personal power but at elevating the living standards of his subjects.
-                By dedicating his authority to the welfare of the people, he reshaped how the kingdom governed itself
-                and how its resources served the community as a whole.
-              </p>
-              <div class="mag-glass-note">
-                <h4><i class="fa fa-balance-scale" aria-hidden="true"></i> A Focus on Outcomes</h4>
-                <p>
-                  Every reform was measured against a single standard: whether it produced consistently superior
-                  outcomes for the people of Bunyala. Governance was treated as a service, not a privilege.
-                </p>
-              </div>
-            </section>
-
-            <section id="section-empower" data-section="section-empower">
-              <h2><span class="sec-num">Chapter 02</span>Empowering Followers</h2>
-              <p>
-                He empowered his followers, integrating them into leadership roles so that, collectively, they
-                transformed Bunyala into a more prosperous and cohesive domain. Leadership was never concentrated
-                in a single pair of hands; it was distributed, shared, and strengthened across the community.
-              </p>
-              <blockquote class="mag-pullquote">
-                A kingdom grows strongest when its people are given a share in leading it.
-                <footer>— The Namwonja Standard</footer>
-              </blockquote>
-              <p>
-                By bringing capable individuals into positions of responsibility, Namwonja ensured that progress was
-                not dependent on one ruler alone, but on a network of committed leaders working toward a common purpose.
-              </p>
-            </section>
-
-            <section id="section-autonomy" data-section="section-autonomy">
-              <h2><span class="sec-num">Chapter 03</span>Kinship and Autonomy</h2>
-              <p>
-                While he installed members of his own clan in positions of rulership, he permitted his maternal
-                uncles — the Abanyekera of Mugasa and Runyu in Buofu Sub-Location — to retain their own autonomous
-                leader. This demonstrated a nuanced balance between central authority and kinship autonomy.
-              </p>
-              <p>
-                It was a governance built on respect: authority could be centralised without erasing the identities
-                of the communities that made up the kingdom. Recognition of kinship and tradition strengthened loyalty
-                rather than weakened it.
-              </p>
-            </section>
-
-            <section id="section-golden" data-section="section-golden">
-              <h2><span class="sec-num">Chapter 04</span>The Golden Age</h2>
-              <p>
-                Under his reign, the kingdom experienced an era of peace, prosperity, elevated living standards,
-                and territorial expansion — widely regarded as the kingdom's golden age.
-              </p>
-              <p class="mag-glass-note" style="padding:26px 28px;margin-bottom:0">
-                Contemporary accounts record that some subjects acclaimed him the finest Omwami Bunyala had ever known.
-              </p>
-            </section>
-
-            <!-- ============================ META BAR ============================ -->
-            <div class="mag-meta-bar">
-              <span>By <a href="about.html">Namwonja Heritage Journal</a></span>
-              <span class="dot" aria-hidden="true"></span>
-              <span>Community</span>
-              <span class="dot" aria-hidden="true"></span>
-              <span>Cover Story · Sections 9 and 10</span>
-            </div>
-          </article>
+          <article class="mag-article" id="storyContent"></article>
         </div>
       </div>
     </section>
@@ -293,6 +222,7 @@
 
   <!-- Comments -->
   <script src="js/comments.js"></script>
+  <script src="js/blog.js"></script>
 </body>
 </html>
 

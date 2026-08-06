@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8" />
-  <title>Heritage Story | Namwonja Heritage Journal</title>
+  <title>Story | Namwonja Heritage Journal</title>
   <meta name="description" content="The diaspora of blood, the dynastic lineage, and the origins of the kingdom of Bunyala on the shores of Lake Victoria." />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -65,23 +65,20 @@
       <div class="mag-container">
         <div class="mag-story-hero-row">
           <div>
-            <a href="category.html" class="mag-kicker">Heritage · Origins and Lineage</a>
-            <h1>Diaspora of Blood and the Dynastic Lineage</h1>
-            <p class="mag-story-standfirst">
-              The Namwonja story begins at the source of the dynasty itself — the diaspora of blood,
-              the descent of the royal lineage, and the ancient shores of Lake Victoria where the
-              kingdom of Bunyala was born.
+            <a href="category.html" class="mag-kicker" id="storyCategoryLink">Story</a>
+            <h1 id="storyTitle">Loading story…</h1>
+            <p class="mag-story-standfirst" id="storyExcerpt">
             </p>
             <ul class="mag-story-meta">
-              <li>By <a href="about.html"><strong>Namwonja Heritage Journal</strong></a></li>
+              <li>By <a href="about.html"><strong id="storyAuthor">Namwonja Heritage Journal</strong></a></li>
               <li class="dot" aria-hidden="true"></li>
-              <li><i class="fa fa-clock-o" aria-hidden="true"></i> <span class="mag-date" data-offset="55">June 8, 2026</span></li>
+              <li><i class="fa fa-clock-o" aria-hidden="true"></i> <span id="storyDate"></span></li>
               <li class="dot" aria-hidden="true"></li>
               <li>Cover Story · Sections 3, 6 and 4</li>
             </ul>
           </div>
           <figure class="mag-story-figure" data-reveal="zoom">
-            <img src="images/blog/blog (2).jpeg" alt="Heritage and lineage illustration" loading="eager" />
+            <img id="storyFigureImg" src="images/blog/Paul Khasamba.jpeg" alt="Story cover image" loading="eager" />
           </figure>
           <figcaption class="mag-editorial-caption">The Scepter of Mukudi</figcaption>
         </div>
@@ -113,67 +110,7 @@
           </aside>
 
           <!-- Magazine Feature Article -->
-          <article class="mag-article">
-            <section id="section-diaspora" data-section="section-diaspora">
-              <h2><span class="sec-num">Chapter 01</span>Diaspora of Blood</h2>
-              <p class="mag-lead">Today, the Luhyas, Luos, and Baganda carry the bloodline of Namwonja Mukudi across the vast reaches of his former empire.</p>
-              <p>His descendants are found across two counties and many locations:</p>
-              <ul>
-                <li><strong>Siaya County:</strong> Mulambo Majimbo, Yimbo Kadimo, Bukhwaya in Osieko (present-day Bondo Sub-County), Busonga Bumwango Mwango hill in Alego Usonga, and Odiado (Ugenya Sub-County).</li>
-                <li><strong>Busia County:</strong> Bukangala and Bukhekhe in Samia (Samia Sub-County), Bukhayo in Matayos Sub-County, and Buongo, Mundika, and Bukhuma in Bunyala Sub-County.</li>
-              </ul>
-              <div class="mag-glass-note">
-                <h4><i class="fa fa-users" aria-hidden="true"></i> Blood Across Empires</h4>
-                <p>
-                  The diaspora of blood bound the Luhya, Luo, and Baganda peoples together — a single lineage
-                  spread across the lands his kingdom once ruled.
-                </p>
-              </div>
-            </section>
-
-            <section id="section-lineage" data-section="section-lineage">
-              <h2><span class="sec-num">Chapter 02</span>Dynastic Lineage</h2>
-              <p>
-                Paul Nawonja Mukudi was a hereditary king from the ruling dynasty of the Abamulembo clan.
-                He was the firstborn son of Omwami Mukudi Khainja and Akelo, daughter of Agalo Omunyekera
-                of the Abayima sub-clan of the Abanyekera clan, and Kombo Nabukaki, from the Ababukaki
-                (Luo Kaugagi) clan.
-              </p>
-              <p>
-                To rule was not merely to hold power; it was to carry a trust — a trust that Namwonja Mukudi
-                honored through service, reform, and the elevation of his people.
-              </p>
-            </section>
-
-            <section id="section-lake" data-section="section-lake">
-              <h2><span class="sec-num">Chapter 03</span>Lake Victoria and Island Sovereignty</h2>
-              <p>
-                On Lake Victoria, Namwonja Mukudi's rule extended over the islands of Sigulu, Khama, Sumba,
-                Makera (Mageta), Jagusi, Wayasi, Lolwe, Siro, Migingo, Ringiti, and Oyamo. He maintained
-                diplomatic and kinship relations across these islands through strategic intermarriages.
-              </p>
-              <h4>The Partition of Sigulu Island</h4>
-              <p>
-                Sigulu Island was divided into eastern and western sectors. The River Somokho, flowing through
-                Bukhoba, Buyanga, and Somokho, served as the boundary: the eastern portion fell under Kenyan
-                jurisdiction, while the western portion belonged to Uganda.
-              </p>
-              <p class="mag-glass-note" style="padding:26px 28px;margin-bottom:0">
-                Namwonja Mukudi maintained residences at Buyanga on Sigulu Island, Jagusi Island, and Buonja —
-                a territory that extended onto the mainland at Maduwa in Majanji and Buonja (derived from his
-                name) in Busoga, on mainland Uganda.
-              </p>
-            </section>
-
-            <!-- ============================ META BAR ============================ -->
-            <div class="mag-meta-bar">
-              <span>By <a href="about.html">Namwonja Heritage Journal</a></span>
-              <span class="dot" aria-hidden="true"></span>
-              <span>Heritage</span>
-              <span class="dot" aria-hidden="true"></span>
-              <span>Cover Story · Sections 3, 6 and 4</span>
-            </div>
-          </article>
+          <article class="mag-article" id="storyContent"></article>
         </div>
       </div>
     </section>
@@ -284,6 +221,7 @@
 
   <!-- Comments -->
   <script src="js/comments.js"></script>
+  <script src="js/blog.js"></script>
 </body>
 </html>
 
