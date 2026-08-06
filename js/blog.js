@@ -86,7 +86,9 @@
         }
 
         var content = document.getElementById("storyContent");
-        if (content) content.innerHTML = story.content_html || "<p></p>";
+        if (content && story.content_html) {
+          content.innerHTML = story.content_html;
+        }
 
         // Share links
         var url = encodeURIComponent(window.location.href);
