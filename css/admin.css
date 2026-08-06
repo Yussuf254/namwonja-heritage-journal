@@ -1494,3 +1494,24 @@ h1, h2, h3, h4, h5, h6 {
 .dash-chart-card .kpi-value {
   line-height: 1.1;
 }
+
+/* ===== Backfill SQL modal ===== */
+#backfillSqlModal .admin-sql-block {
+  background: #0b1020;
+  color: #d5def0;
+  border: 1px solid var(--admin-line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  max-height: 60vh;
+  overflow: auto;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin-bottom: 0;
+}
+[data-theme="dark"] #backfillSqlModal .admin-sql-block {
+  background: #060a14;
+  border-color: var(--admin-line);
+}

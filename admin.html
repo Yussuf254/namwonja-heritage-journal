@@ -793,6 +793,23 @@
                   <button type="button" class="admin-btn admin-btn-outline" id="settingsResetBtn">Reset</button>
                   <button type="button" class="admin-btn admin-btn-solid" id="settingsSaveBtn">Save Settings</button>
                 </div>
+
+                <div class="mt-4 pt-3" style="border-top: 1px solid var(--admin-line-soft);">
+                  <div class="admin-label">Database Setup (one-time)</div>
+                  <p class="text-muted small mb-2">
+                    To make edits to existing stories appear on the public site, the <code>content_html</code>
+                    column must be populated for all 12 stories. Open this SQL script and run it in your
+                    Supabase SQL Editor.
+                  </p>
+                  <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="openBackfillSqlBtn">
+                      <i class="bi bi-code-slash me-1"></i> View Backfill SQL
+                    </button>
+                    <a href="https://supabase.com/dashboard/project/_/sql/new" target="_blank" rel="noopener noreferrer" class="admin-btn admin-btn-outline admin-btn-sm">
+                      <i class="bi bi-box-arrow-up-right me-1"></i> Open Supabase SQL Editor
+                    </a>
+                  </div>
+                </div>
                </div>
              </div>
            </section>
@@ -984,6 +1001,36 @@
             <button type="submit" class="admin-btn admin-btn-solid">Save</button>
           </div>
         </form>
+      </div>
+    </div>
+  </div>
+
+<!-- Backfill SQL modal -->
+  <div id="backfillSqlModal" class="modal fade admin-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Story Content Backfill SQL</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small mb-3">
+            Copy this SQL, then open <strong>Supabase → SQL Editor</strong>, paste it, and click <strong>Run</strong>.
+            This populates <code>content_html</code> for all 12 stories so admin edits appear on the public site.
+          </p>
+          <div class="d-flex justify-content-end mb-2">
+            <button type="button" class="admin-btn admin-btn-outline admin-btn-sm" id="copyBackfillSqlBtn">
+              <i class="bi bi-clipboard me-1"></i> Copy SQL
+            </button>
+          </div>
+          <pre id="backfillSqlContent" class="admin-sql-block"></pre>
+        </div>
+        <div class="modal-footer">
+          <a href="https://supabase.com/dashboard/project/_/sql/new" target="_blank" rel="noopener noreferrer" class="admin-btn admin-btn-solid">
+            <i class="bi bi-box-arrow-up-right me-1"></i> Open Supabase SQL Editor
+          </a>
+          <button type="button" class="admin-btn admin-btn-outline" data-bs-dismiss="modal">Close</button>
+        </div>
       </div>
     </div>
   </div>

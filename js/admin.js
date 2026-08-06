@@ -2163,6 +2163,60 @@ function initExports() {
       });
     }
 
+// ============================================================
+    //  Database Setup / Backfill SQL modal
+    // ============================================================
+    function initBackfillSql() {
+      var openBtn = document.getElementById("openBackfillSqlBtn");
+      var modalEl = document.getElementById("backfillSqlModal");
+      var contentEl = document.getElementById("backfillSqlContent");
+      var copyBtn = document.getElementById("copyBackfillSqlBtn");
+      if (!openBtn || !modalEl || !contentEl) return;
+
+      openBtn.addEventListener("click", function () {
+        // Load the SQL file content by reference to the repo file.
+        fetch("backfill-story-content.sql", { cache: "no-store" })
+          .then(function (r) {
+            if (!r.ok) throw new Error(r.status);
+            return r.text();
+          })
+          .then(function (sql) {
+            contentEl.textContent = sql;
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+          })
+          .catch(function () {
+            // Fallback: point the user to the repo file.
+            contentEl.textContent =
+              "-- Could not load backfill-story-content.sql from the server.\n" +
+              "-- Please open the file named 'backfill-story-content.sql' in your project\n" +
+              "-- and paste its contents into the Supabase SQL Editor manually.";
+            var modal2 = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal2.show();
+          });
+      });
+
+      if (copyBtn) {
+        copyBtn.addEventListener("click", function () {
+          var txt = contentEl.textContent || "";
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(txt).then(function () {
+              toast("SQL copied to clipboard.", "success");
+            }).catch(function () { toast("Could not copy SQL.", "error"); });
+          } else {
+            // Fallback for older browsers
+            var ta = document.createElement("textarea");
+            ta.value = txt;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); toast("SQL copied to clipboard.", "success"); }
+            catch (e) { toast("Could not copy SQL.", "error"); }
+            document.body.removeChild(ta);
+          }
+        });
+      }
+    }
+
     // Wire everything
     initSectionControls();
     initBulkActions();
@@ -2172,6 +2226,7 @@ function initExports() {
     initRTE();
     initExports();
     initShortcuts();
+    initBackfillSql();
 
     onTabSwitch = function (tabName) {
       if (tabName === "dashboard") {
