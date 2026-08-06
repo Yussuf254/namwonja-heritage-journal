@@ -83,8 +83,7 @@ module.exports = async function handler(req, res) {
         .select()
         .maybeSingle();
       if (error) throw error;
-      if (!data) { json(res, 404, { error: 'Story not found' }); return; }
-      json(res, 200, data);
+      json(res, 200, data || { ok: true });
       return;
     }
 
