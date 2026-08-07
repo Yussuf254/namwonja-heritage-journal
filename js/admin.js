@@ -21,7 +21,7 @@
     users: { data: [], filtered: [], page: 1, selected: new Set() }
   };
 
-  var charts = { stories: null, comments: null, donations: null, categories: null, pageViews: null, topPages: null, revenue: null, revenueStatus: null, spark: {} };
+  var charts = { stories: null, comments: null, donations: null, categories: null, pageViews: null, topPages: null, revenue: null, revenueStatus: null, spark: {}, project: {} };
 
   function timeAgo(s) {
     if (!s) return "";
@@ -1081,7 +1081,7 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
         var cls = p.status === "success" ? "success" : (p.status === "pending" ? "pending" : "failed");
         html += '<tr>' +
           '<td class="title-cell">' + escapeHtml(p.phone) + '</td>' +
-          '<td>KES ' + escapeHtml(String(p.amount)) + '</td>' +
+          '<td><span class="donation-amount ' + cls + '">KES ' + escapeHtml(String(p.amount)) + '</span></td>' +
           '<td class="muted">' + escapeHtml(p.project_name || "—") + '</td>' +
           '<td><span class="status-badge ' + cls + '">' + escapeHtml(p.status) + '</span></td>' +
           '<td class="muted">' + escapeHtml(p.mpesa_receipt || "—") + '</td>' +
@@ -1090,6 +1090,7 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
       html += '</tbody></table></div>';
       el.innerHTML = html;
       renderPagination("payments", state.payments.filtered.length);
+      updateDonationStats(state.payments.data);
     }
 
     // ============================================================
@@ -2056,6 +2057,181 @@ function updateStats() {
       }
      }
 
+    // ============================================================
+    //  Project donation charts (per-project mini bar charts)
+    // ============================================================
+    function updateDonationStats(payments) {
+      var totalRevenue = 0;
+      var successCount = 0;
+      var pendingCount = 0;
+      var failedCount = 0;
+      var donorPhones = {};
+      (payments || []).forEach(function (pay) {
+        var st = (pay.status || "").toLowerCase();
+        var amt = Number(pay.amount) || 0;
+        if (st === "success") {
+          totalRevenue += amt;
+          successCount++;
+          donorPhones[pay.phone] = true;
+        } else if (st === "pending") {
+          pendingCount++;
+        } else if (st === "failed") {
+          failedCount++;
+        }
+      });
+      var revEl = document.getElementById("donatStatRevenue");
+      if (revEl) revEl.textContent = "KES " + fmtMoney(totalRevenue);
+      var sucEl = document.getElementById("donatStatSuccess");
+      if (sucEl) sucEl.textContent = successCount.toLocaleString();
+      var pendEl = document.getElementById("donatStatPending");
+      if (pendEl) pendEl.textContent = pendingCount.toLocaleString();
+      var failEl = document.getElementById("donatStatFailed");
+      if (failEl) failEl.textContent = failedCount.toLocaleString();
+    }
+
+    function renderProjectCharts() {
+      if (typeof Chart === "undefined") return;
+      var period = parseInt(document.getElementById("projectChartPeriod").value || "30", 10);
+      var container = document.getElementById("projectChartsRow");
+      if (!container) return;
+
+      fetch("/api/admin/project-stats", { headers: authHeaders() })
+        .then(function (r) { return r.json().then(function (data) { return { status: r.status, data: data }; }); })
+        .then(function (res) {
+          if (res.status !== 200 || !Array.isArray(res.data)) {
+            container.innerHTML = '<div class="col-12"><div class="admin-empty"><i class="bi bi-bullseye"></i><p>No project data available.</p></div></div>';
+            return;
+          }
+          var projects = res.data;
+          var projEl = document.getElementById("donatStatProjects");
+          if (projEl) projEl.textContent = projects.length.toLocaleString();
+          var donorsEl = document.getElementById("donatStatDonors");
+          if (donorsEl) {
+            var uniqueDonors = new Set();
+            projects.forEach(function (p) {
+              (state.payments.data || []).forEach(function (pay) {
+                if ((pay.status || "").toLowerCase() === "success" && pay.project_id == p.id) uniqueDonors.add(pay.phone);
+              });
+            });
+            donorsEl.textContent = uniqueDonors.size.toLocaleString();
+          }
+          if (!projects.length) {
+            container.innerHTML = '<div class="col-12"><div class="admin-empty"><i class="bi bi-bullseye"></i><p>No projects found. Create a project to see donation charts.</p></div></div>';
+            return;
+          }
+
+          var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+          var gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(28,25,23,0.06)";
+          var tickColor = isDark ? "#9b8f7f" : "#85796b";
+          function chartFont(size, weight) {
+            return { family: "'Inter','Segoe UI',Arial,sans-serif", size: size || 11, weight: weight || "500" };
+          }
+          var tooltipStyle = {
+            backgroundColor: isDark ? "rgba(15,20,34,0.95)" : "rgba(255,255,255,0.95)",
+            titleColor: isDark ? "#f1f5f9" : "#0f172a",
+            bodyColor: isDark ? "#cbd5e1" : "#475569",
+            borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(28,25,23,0.08)",
+            borderWidth: 1,
+            cornerRadius: 8,
+            padding: 10,
+            titleFont: chartFont(12, "700"),
+            bodyFont: chartFont(11, "500"),
+            boxPadding: 3,
+            callbacks: {
+              label: function (context) {
+                return "KES " + context.parsed.y.toLocaleString();
+              }
+            }
+          };
+
+          var html = "";
+          var projectColors = ["#b08d4f", "#6366f1", "#10b981", "#f59e0b", "#3b82f6", "#8b5cf6", "#ef4444", "#14b8a6"];
+          projects.forEach(function (proj, idx) {
+            var color = projectColors[idx % projectColors.length];
+            var labels = proj.daily_labels || [];
+            var data = proj.daily_amounts || [];
+            var canvasId = "projectChart_" + proj.id;
+            html += '<div class="col-12 col-md-6 col-xl-4">' +
+              '<div class="admin-card p-0 project-chart-card h-100">' +
+                '<div class="p-4 pb-3 d-flex align-items-center justify-content-between">' +
+                  '<div class="d-flex align-items-center gap-3" style="min-width:0">' +
+                    '<div class="admin-stat-icon" style="--accent:' + color + ';width:42px;height:42px;font-size:16px;flex-shrink:0"><i class="bi bi-bullseye"></i></div>' +
+                    '<div style="min-width:0">' +
+                      '<h5 class="mb-1 fw-semibold text-truncate" style="max-width:220px" title="' + escapeHtml(proj.name) + '">' + escapeHtml(proj.name) + '</h5>' +
+                      '<p class="text-muted small mb-0">KES ' + fmtMoney(proj.raised_amount || 0) + ' raised</p>' +
+                    '</div>' +
+                  '</div>' +
+                  '<span class="status-badge ' + (proj.status === 'active' ? 'approved' : 'pending') + '">' + escapeHtml(proj.status) + '</span>' +
+                '</div>' +
+                '<div class="px-4 pb-2">' +
+                  '<div class="admin-project-progress"><div class="admin-project-progress-bar" style="width:' + proj.progress_pct + '%"></div></div>' +
+                  '<div class="d-flex justify-content-between mt-2 small text-muted">' +
+                    '<span>Target: KES ' + fmtMoney(proj.target_amount || 0) + '</span>' +
+                    '<span class="fw-semibold" style="color:' + color + '">' + (proj.progress_pct || 0) + '%</span>' +
+                  '</div>' +
+                '</div>' +
+                '<div class="px-4 pb-4">' +
+                  '<canvas id="' + canvasId + '" height="140"></canvas>' +
+                '</div>' +
+              '</div>' +
+            '</div>';
+          });
+          container.innerHTML = html;
+
+          projects.forEach(function (proj, idx) {
+            var canvasId = "projectChart_" + proj.id;
+            var canvas = document.getElementById(canvasId);
+            if (!canvas) return;
+            if (charts.project[canvasId]) charts.project[canvasId].destroy();
+            var ctx = canvas.getContext("2d");
+            var grad = ctx.createLinearGradient(0, 0, 0, 200);
+            var baseColor = projectColors[idx % projectColors.length];
+            grad.addColorStop(0, baseColor + "55");
+            grad.addColorStop(1, baseColor + "05");
+            charts.project[canvasId] = new Chart(canvas, {
+              type: "bar",
+              data: {
+                labels: proj.daily_labels || [],
+                datasets: [{
+                  label: "KES",
+                  data: proj.daily_amounts || [],
+                  backgroundColor: grad,
+                  borderRadius: 6,
+                  borderSkipped: false,
+                  barPercentage: 0.7,
+                  categoryPercentage: 0.8
+                }]
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: { display: false },
+                  tooltip: tooltipStyle
+                },
+                scales: {
+                  x: {
+                    grid: { display: false },
+                    ticks: { color: tickColor, font: chartFont(10, "500"), maxRotation: 0, autoSkipPadding: 12 },
+                    border: { display: false }
+                  },
+                  y: {
+                    beginAtZero: true,
+                    grid: { color: gridColor, drawBorder: false },
+                    ticks: { color: tickColor, font: chartFont(10, "500"), padding: 6 },
+                    border: { display: false }
+                  }
+                },
+                animation: { duration: 1000, easing: "easeOutQuart" }
+              }
+            });
+          });
+        })
+        .catch(function () {
+          container.innerHTML = '<div class="col-12"><div class="admin-empty"><i class="bi bi-bullseye"></i><p>Failed to load project charts.</p></div></div>';
+        });
+    }
+
     function filterMedia(media) {
       var query = "";
       var searchEl = document.getElementById("mediaSearch");
@@ -2292,6 +2468,10 @@ function updateStats() {
       if (revenuePeriod) {
         revenuePeriod.addEventListener("change", function () { renderRevenueCharts(); });
       }
+      var projectChartPeriod = document.getElementById("projectChartPeriod");
+      if (projectChartPeriod) {
+        projectChartPeriod.addEventListener("change", function () { renderProjectCharts(); });
+      }
 
       // Confirm modal confirm button
       var confirmBtn = document.getElementById("confirmModalConfirm");
@@ -2516,6 +2696,10 @@ function initExports() {
       }
       if (tabName === "analytics" && typeof renderAnalyticsCharts === "function") renderAnalyticsCharts();
       if (tabName === "revenue" && typeof renderRevenueCharts === "function") renderRevenueCharts();
+      if (tabName === "payments") {
+        updateDonationStats(state.payments.data);
+        renderProjectCharts();
+      }
       if (tabName === "projects") loadProjects();
       if (tabName === "categories") renderCategoriesTable();
       if (tabName === "authors" || tabName === "contributors" || tabName === "users") renderPlaceholderSection(tabName);
