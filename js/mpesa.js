@@ -13,6 +13,7 @@
     //  Donation projects (public site)
     // -------------------------------------------------------------
     var grid = document.getElementById("donationProjectsGrid");
+    var cachedProjects = [];
 
     function loadProjects() {
       if (!grid) return;
@@ -21,19 +22,23 @@
         .then(function (projects) {
           if (!Array.isArray(projects)) throw new Error("Invalid response");
           if (!projects.length) {
+            cachedProjects = [];
             grid.innerHTML =
               '<div class="mag-projects-empty"><i class="fa fa-heart" aria-hidden="true"></i>' +
               '<p><strong>No active projects right now.</strong></p>' +
               '<p class="text-muted small">Check back soon for new causes, or make a general donation below.</p></div>';
             return;
           }
+          cachedProjects = projects;
           renderProjects(projects);
         })
         .catch(function () {
-          grid.innerHTML =
-            '<div class="mag-projects-empty"><i class="fa fa-heart" aria-hidden="true"></i>' +
-            '<p><strong>Projects are temporarily unavailable.</strong></p>' +
-            '<p class="text-muted small">You can still make a general donation below.</p></div>';
+          if (!cachedProjects.length) {
+            grid.innerHTML =
+              '<div class="mag-projects-empty"><i class="fa fa-heart" aria-hidden="true"></i>' +
+              '<p><strong>Projects are temporarily unavailable.</strong></p>' +
+              '<p class="text-muted small">You can still make a general donation below.</p></div>';
+          }
         });
     }
 
@@ -73,21 +78,21 @@
                 '<span class="text-muted small">Target: ' + escapeHtml(money(target)) + '</span>' +
                 '<span class="text-muted small">' + (Number(p.donation_count) || 0) + ' donation(s)</span>' +
               '</div>' +
-              '<button type="button" class="mag-btn mag-btn-solid mag-project-donate" data-project=\'' + JSON.stringify(p).replace(/'/g, "&#39;") + '\'>' +
+              '<button type="button" class="mag-btn mag-btn-solid mag-project-donate" data-project-id="' + escapeAttr(p.id) + '">' +
                 '<i class="fa fa-heart" aria-hidden="true"></i> ' + donateLabel +
               '</button>' +
             '</div>' +
           '</article>';
       });
       grid.innerHTML = html;
-      grid.querySelectorAll("[data-project]").forEach(function (btn) {
+      grid.querySelectorAll("[data-project-id]").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          try {
-            var p = JSON.parse(btn.getAttribute("data-project"));
-            openDonationModal(p);
-          } catch (e) {
-            openDonationModal(null);
+          var id = btn.getAttribute("data-project-id");
+          var p = null;
+          for (var i = 0; i < cachedProjects.length; i++) {
+            if (String(cachedProjects[i].id) === String(id)) { p = cachedProjects[i]; break; }
           }
+          openDonationModal(p);
         });
       });
       // Reveal animation fallback
@@ -341,6 +346,16 @@
         });
       }, 4000);
     }
+
+    // Auto-refresh projects when the page/tab becomes visible again (e.g. after
+    // an admin saves a project in another tab), so progress bars and the donate
+    // modal always reflect the latest data — no manual refresh required.
+    window.addEventListener("pageshow", function (e) {
+      if (e.persisted) loadProjects();
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (document.visibilityState === "visible") loadProjects();
+    });
 
     // Load projects on page load
     loadProjects();
