@@ -1334,18 +1334,28 @@ function updateStats() {
       });
       var top = sorted.slice(0, 5);
       if (!top.length) {
-        el.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No stories available.</td></tr>';
+        el.innerHTML = '<div class="admin-empty py-4"><i class="bi bi-book"></i><p>No stories available.</p></div>';
         return;
       }
       var html = "";
-      var medals = ["🥇", "🥈", "🥉"];
+      var rankClasses = ["gold", "silver", "bronze"];
       top.forEach(function (s, i) {
-        html += '<tr>' +
-          '<td class="muted small">' + (medals[i] || (i + 1) + ".") + '</td>' +
-          '<td class="title-cell">' + escapeHtml(s.title || s.slug || "Untitled") + '</td>' +
-          '<td class="text-end muted small">' + estViews(s).toLocaleString() + '</td>' +
-          '<td class="muted small">' + (s.is_published ? 'Published' : 'Draft') + '</td>' +
-          '</tr>';
+        var views = estViews(s).toLocaleString();
+        var status = s.is_published
+          ? '<span class="status-badge approved">Published</span>'
+          : '<span class="status-badge new">Draft</span>';
+        var meta = (s.category || "Uncategorized").trim() || "Uncategorized";
+        html += '<div class="story-perf-item">' +
+          '<span class="story-perf-rank ' + (rankClasses[i] || "") + '">' + (i + 1) + '</span>' +
+          '<div class="story-perf-info">' +
+            '<strong>' + escapeHtml(s.title || s.slug || "Untitled") + '</strong>' +
+            '<small>' + escapeHtml(meta) + ' · ' + fmtDate(s.published_at || s.created_at) + '</small>' +
+          '</div>' +
+          '<div class="story-perf-meta">' +
+            '<span class="story-perf-views"><i class="bi bi-eye"></i> ' + views + '</span>' +
+            status +
+          '</div>' +
+        '</div>';
       });
       el.innerHTML = html;
     }
