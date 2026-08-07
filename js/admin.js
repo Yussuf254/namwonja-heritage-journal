@@ -3093,9 +3093,9 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
      //  M-Pesa Diagnostics
      // ============================================================
      function initMpesaDiagnostics() {
-       function authHeaders() {
+function authHeaders() {
          var t = localStorage.getItem("namwonja_admin_token");
-         return t ? { Authorization: "Bearer " + t, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
+         return t ? { Authorization: "Basic " + t, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
        }
        function toast(msg, type) {
          var el = document.createElement("div");

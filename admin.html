@@ -199,75 +199,11 @@
               <input type="password" class="admin-input" id="adminPass" autocomplete="current-password" required />
 
               <p id="adminLoginStatus" class="comment-status"></p>
-              <button type="submit" class="admin-btn admin-btn-solid admin-btn-block">Sign In <i class="bi bi-arrow-right"></i></button>
+<button type="submit" class="admin-btn admin-btn-solid admin-btn-block">Sign In <i class="bi bi-arrow-right"></i></button>
             </form>
-                </div>
-              </div>
-
-              <!-- M-Pesa Diagnostics -->
-              <div class="admin-card p-0 mt-4">
-                <div class="p-4 border-bottom">
-                  <div class="d-flex align-items-center gap-3">
-                    <div class="admin-stat-icon" style="--accent:#10b981;width:42px;height:42px;font-size:16px"><i class="bi bi-phone"></i></div>
-                    <div>
-                      <h5 class="mb-1 fw-semibold">M-Pesa Diagnostics</h5>
-                      <p class="text-muted small mb-0">Monitor connection, test transactions, and simulate callbacks.</p>
-                    </div>
-                    <span class="ms-auto status-badge" id="mpesaOfflineBadge">Online</span>
-                  </div>
-                </div>
-                <div class="p-4">
-                  <div class="row g-4">
-                    <div class="col-md-4">
-                      <div class="admin-label">Connection Test</div>
-                      <button class="admin-btn admin-btn-outline w-100" id="mpesaOAuthTest"><i class="bi bi-wifi"></i> Test OAuth Connection</button>
-                      <div class="mt-2 small text-muted" id="mpesaOAuthResult"></div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="admin-label">Test STK Push (KES 1)</div>
-                      <input type="text" class="admin-input mb-2" id="mpesaTestPhone" placeholder="2547XXXXXXXX" />
-                      <button class="admin-btn admin-btn-gold w-100" id="mpesaTestStk"><i class="bi bi-send"></i> Send Test STK Push</button>
-                      <div class="mt-2 small text-muted" id="mpesaTestResult"></div>
-                    </div>
-                    <div class="col-md-4">
-                      <div class="admin-label">Simulate Callback</div>
-                      <input type="text" class="admin-input mb-2" id="mpesaSimCheckoutId" placeholder="CheckoutRequestID" />
-                      <select class="form-select form-select-sm mb-2" id="mpesaSimResultCode">
-                        <option value="0">Success (ResultCode 0)</option>
-                        <option value="1">Pending (ResultCode 1)</option>
-                        <option value="-1">Failed (ResultCode -1)</option>
-                      </select>
-                      <button class="admin-btn admin-btn-outline w-100" id="mpesaSimCallback"><i class="bi bi-arrow-repeat"></i> Simulate</button>
-                      <div class="mt-2 small text-muted" id="mpesaSimResult"></div>
-                    </div>
-                  </div>
-                  <div class="row g-4 mt-1">
-                    <div class="col-12">
-                      <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                          <div class="admin-label">Offline Mode</div>
-                          <p class="text-muted small mb-0">When enabled, STK push returns fake success without calling Safaricom.</p>
-                        </div>
-                        <label class="form-check form-switch mb-0">
-                          <input class="form-check-input" type="checkbox" id="mpesaOfflineMode" />
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="row g-4 mt-2">
-                    <div class="col-12">
-                      <div class="admin-label">Recent Transactions</div>
-                      <div class="table-responsive">
-                        <table class="admin-table">
-                          <thead><tr><th>Phone</th><th>Amount</th><th>Status</th><th>Receipt</th><th>Project</th><th>Date</th></tr></thead>
-                          <tbody id="mpesaTransactionsTable"></tbody>
-                        </table>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
+          </div>
+        </div>
+      </section>
 
       <!-- Panel -->
       <section id="adminPanel" class="admin-panel" style="display:none">
@@ -1087,6 +1023,70 @@
                   <button type="button" class="admin-btn admin-btn-solid" id="settingsSaveBtn">Save Settings</button>
                 </div>
 
+               </div>
+             </div>
+
+             <!-- M-Pesa Diagnostics -->
+             <div class="admin-card p-0 mt-4">
+               <div class="p-4 border-bottom">
+                 <div class="d-flex align-items-center gap-3">
+                   <div class="admin-stat-icon" style="--accent:#10b981;width:42px;height:42px;font-size:16px"><i class="bi bi-phone"></i></div>
+                   <div>
+                     <h5 class="mb-1 fw-semibold">M-Pesa Diagnostics</h5>
+                     <p class="text-muted small mb-0">Monitor connection, test transactions, and simulate callbacks.</p>
+                   </div>
+                   <span class="ms-auto status-badge" id="mpesaOfflineBadge">Online</span>
+                 </div>
+               </div>
+               <div class="p-4">
+                 <div class="row g-4">
+                   <div class="col-md-4">
+                     <div class="admin-label">Connection Test</div>
+                     <button class="admin-btn admin-btn-outline w-100" id="mpesaOAuthTest"><i class="bi bi-wifi"></i> Test OAuth Connection</button>
+                     <div class="mt-2 small text-muted" id="mpesaOAuthResult"></div>
+                   </div>
+                   <div class="col-md-4">
+                     <div class="admin-label">Test STK Push (KES 1)</div>
+                     <input type="text" class="admin-input mb-2" id="mpesaTestPhone" placeholder="2547XXXXXXXX" />
+                     <button class="admin-btn admin-btn-gold w-100" id="mpesaTestStk"><i class="bi bi-send"></i> Send Test STK Push</button>
+                     <div class="mt-2 small text-muted" id="mpesaTestResult"></div>
+                   </div>
+                   <div class="col-md-4">
+                     <div class="admin-label">Simulate Callback</div>
+                     <input type="text" class="admin-input mb-2" id="mpesaSimCheckoutId" placeholder="CheckoutRequestID" />
+                     <select class="form-select form-select-sm mb-2" id="mpesaSimResultCode">
+                       <option value="0">Success (ResultCode 0)</option>
+                       <option value="1">Pending (ResultCode 1)</option>
+                       <option value="-1">Failed (ResultCode -1)</option>
+                     </select>
+                     <button class="admin-btn admin-btn-outline w-100" id="mpesaSimCallback"><i class="bi bi-arrow-repeat"></i> Simulate</button>
+                     <div class="mt-2 small text-muted" id="mpesaSimResult"></div>
+                   </div>
+                 </div>
+                 <div class="row g-4 mt-1">
+                   <div class="col-12">
+                     <div class="d-flex align-items-center justify-content-between">
+                       <div>
+                         <div class="admin-label">Offline Mode</div>
+                         <p class="text-muted small mb-0">When enabled, STK push returns fake success without calling Safaricom.</p>
+                       </div>
+                       <label class="form-check form-switch mb-0">
+                         <input class="form-check-input" type="checkbox" id="mpesaOfflineMode" />
+                       </label>
+                     </div>
+                   </div>
+                 </div>
+                 <div class="row g-4 mt-2">
+                   <div class="col-12">
+                     <div class="admin-label">Recent Transactions</div>
+                     <div class="table-responsive">
+                       <table class="admin-table">
+                         <thead><tr><th>Phone</th><th>Amount</th><th>Status</th><th>Receipt</th><th>Project</th><th>Date</th></tr></thead>
+                         <tbody id="mpesaTransactionsTable"></tbody>
+                       </table>
+                     </div>
+                   </div>
+                 </div>
                </div>
              </div>
            </section>
