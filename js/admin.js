@@ -2644,7 +2644,6 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
     function openProjectModal(project) {
       var modalEl = document.getElementById("projectModal");
       if (!modalEl) return;
-      var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
       var idEl = document.getElementById("projectId");
       var nameEl = document.getElementById("projectName");
       var slugEl = document.getElementById("projectSlug");
@@ -2676,7 +2675,14 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
         if (statusEl) statusEl.value = "active";
         if (coverEl) coverEl.value = "";
       }
-      modal.show();
+
+      if (typeof bootstrap !== "undefined" && bootstrap.Modal) {
+        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        if (modal) { modal.show(); return; }
+      }
+      modalEl.style.display = "block";
+      modalEl.classList.add("show");
+      modalEl.setAttribute("aria-hidden", "false");
     }
 
     function saveProject() {
