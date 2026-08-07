@@ -1983,3 +1983,7 @@ h1, h2, h3, h4, h5, h6 {
 .status-badge.pending i { color: #b45309; }
 .status-badge.failed i { color: var(--admin-red); }
 [data-theme="dark"] .status-badge.pending i { color: #fbbf24; }
+
+/* ===== M-Pesa Diagnostics ===== */
+#tab-settings .admin-card.mt-4 { border-radius: var(--admin-border-radius); }
+#tab-settings .mpesa-offline-active { background: color-mix(in srgb, var(--admin-red) 14%, transparent) !important; color: var(--admin-red) !important; border-color: color-mix(in srgb, var(--admin-red) 30%, transparent) !important; }

@@ -2745,6 +2745,7 @@ function initExports() {
     initItemManagement();
     initRoles();
     initSettings();
+    initMpesaDiagnostics();
     initRTE();
     initExports();
     initShortcuts();
@@ -3084,13 +3085,177 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
             if (m) m.checked = defaults.maintenanceMode;
             toast("Settings reset to defaults.", "success");
           }, "Reset Settings");
-        });
-      }
-    }
+         });
+       }
+     }
 
-    // ============================================================
-    //  Donation Projects CRUD
-    // ============================================================
+     // ============================================================
+     //  M-Pesa Diagnostics
+     // ============================================================
+     function initMpesaDiagnostics() {
+       function authHeaders() {
+         var t = localStorage.getItem("namwonja_admin_token");
+         return t ? { Authorization: "Bearer " + t, "Content-Type": "application/json" } : { "Content-Type": "application/json" };
+       }
+       function toast(msg, type) {
+         var el = document.createElement("div");
+         el.className = "admin-toast " + (type || "info");
+         el.textContent = msg;
+         document.body.appendChild(el);
+         setTimeout(function () { el.remove(); }, 4000);
+       }
+
+       // Offline mode toggle
+       var offlineToggle = document.getElementById("mpesaOfflineMode");
+       var offlineBadge = document.getElementById("mpesaOfflineBadge");
+       if (offlineToggle) {
+         fetch("/api/admin?type=mpesa-offline-mode", { headers: authHeaders() })
+           .then(function (r) { return r.json(); })
+           .then(function (data) {
+             if (data && typeof data.offline === "boolean") {
+               offlineToggle.checked = data.offline;
+               updateOfflineBadge(data.offline);
+             }
+           })
+           .catch(function () {});
+
+         offlineToggle.addEventListener("change", function () {
+           fetch("/api/admin?type=mpesa-offline-mode", {
+             method: "POST", headers: authHeaders(),
+             body: JSON.stringify({ enabled: offlineToggle.checked })
+           }).then(function (r) { return r.json(); })
+             .then(function (data) {
+               if (data && typeof data.offline === "boolean") {
+                 updateOfflineBadge(data.offline);
+                 toast("Offline mode " + (data.offline ? "enabled" : "disabled"), "success");
+               }
+             })
+             .catch(function () { toast("Failed to update offline mode", "error"); });
+         });
+       }
+
+       function updateOfflineBadge(isOffline) {
+         if (!offlineBadge) return;
+         offlineBadge.textContent = isOffline ? "Offline" : "Online";
+         if (isOffline) {
+           offlineBadge.classList.add("mpesa-offline-active");
+         } else {
+           offlineBadge.classList.remove("mpesa-offline-active");
+         }
+       }
+
+       // OAuth test
+       var oauthBtn = document.getElementById("mpesaOAuthTest");
+       var oauthResult = document.getElementById("mpesaOAuthResult");
+       if (oauthBtn) {
+         oauthBtn.addEventListener("click", function () {
+           if (oauthResult) oauthResult.innerHTML = '<span class="text-muted">Testing...</span>';
+           fetch("/api/admin?type=mpesa-oauth-test", { headers: authHeaders() })
+             .then(function (r) { return r.json(); })
+             .then(function (data) {
+               if (data.ok) {
+                 if (oauthResult) oauthResult.innerHTML = '<span style="color:var(--admin-moss)"><i class="bi bi-check-circle-fill"></i> Connected in ' + data.latencyMs + 'ms</span>';
+               } else {
+                 if (oauthResult) oauthResult.innerHTML = '<span style="color:var(--admin-red)"><i class="bi bi-x-circle-fill"></i> ' + escapeHtml(data.error || "Failed") + '</span>';
+               }
+             })
+             .catch(function () {
+               if (oauthResult) oauthResult.innerHTML = '<span style="color:var(--admin-red)">Network error</span>';
+             });
+         });
+       }
+
+       // Test STK push
+       var stkBtn = document.getElementById("mpesaTestStk");
+       var stkResult = document.getElementById("mpesaTestResult");
+       if (stkBtn) {
+         stkBtn.addEventListener("click", function () {
+           var phone = document.getElementById("mpesaTestPhone").value.trim();
+           if (!phone) { if (stkResult) stkResult.innerHTML = '<span style="color:var(--admin-red)">Enter a phone number</span>'; return; }
+           if (stkResult) stkResult.innerHTML = '<span class="text-muted">Sending...</span>';
+           fetch("/api/admin?type=mpesa-test-stk", {
+             method: "POST", headers: authHeaders(),
+             body: JSON.stringify({ phone: phone, amount: 1 })
+           })
+             .then(function (r) { return r.json(); })
+             .then(function (data) {
+               if (data.ok) {
+                 if (stkResult) stkResult.innerHTML = '<span style="color:var(--admin-moss)"><i class="bi bi-check-circle-fill"></i> ' + escapeHtml(data.message || "Sent") + ' <small>(' + data.CheckoutRequestID + ')</small></span>';
+               } else {
+                 if (stkResult) stkResult.innerHTML = '<span style="color:var(--admin-red)"><i class="bi bi-x-circle-fill"></i> ' + escapeHtml(data.error || "Failed") + '</span>';
+               }
+             })
+             .catch(function () {
+               if (stkResult) stkResult.innerHTML = '<span style="color:var(--admin-red)">Network error</span>';
+             });
+         });
+       }
+
+       // Simulate callback
+       var simBtn = document.getElementById("mpesaSimCallback");
+       var simResult = document.getElementById("mpesaSimResult");
+       if (simBtn) {
+         simBtn.addEventListener("click", function () {
+           var checkoutId = document.getElementById("mpesaSimCheckoutId").value.trim();
+           var resultCode = document.getElementById("mpesaSimResultCode").value;
+           if (!checkoutId) { if (simResult) simResult.innerHTML = '<span style="color:var(--admin-red)">Enter a CheckoutRequestID</span>'; return; }
+           if (simResult) simResult.innerHTML = '<span class="text-muted">Simulating...</span>';
+           fetch("/api/admin?type=mpesa-simulate-callback", {
+             method: "POST", headers: authHeaders(),
+             body: JSON.stringify({ checkoutRequestId: checkoutId, resultCode: Number(resultCode), resultDesc: "Simulated from admin" })
+           })
+             .then(function (r) { return r.json(); })
+             .then(function (data) {
+               if (data.ok) {
+                 if (simResult) simResult.innerHTML = '<span style="color:var(--admin-moss)"><i class="bi bi-check-circle-fill"></i> ' + escapeHtml(data.message) + ' <small>(' + data.status + ')</small></span>';
+               } else {
+                 if (simResult) simResult.innerHTML = '<span style="color:var(--admin-red)"><i class="bi bi-x-circle-fill"></i> ' + escapeHtml(data.error || "Failed") + '</span>';
+               }
+             })
+             .catch(function () {
+               if (simResult) simResult.innerHTML = '<span style="color:var(--admin-red)">Network error</span>';
+             });
+         });
+       }
+
+       // Load recent transactions
+       function loadMpesaTransactions() {
+         fetch("/api/admin?type=mpesa-transactions", { headers: authHeaders() })
+           .then(function (r) { return r.json(); })
+           .then(function (rows) {
+             var tbody = document.getElementById("mpesaTransactionsTable");
+             if (!tbody) return;
+             if (!rows.length) {
+               tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">No transactions yet.</td></tr>';
+               return;
+             }
+             var html = "";
+             rows.slice(0, 20).forEach(function (tx) {
+               var cls = tx.status === "success" ? "success" : (tx.status === "pending" ? "pending" : "failed");
+               var icon = tx.status === "success" ? "bi-check-circle-fill" : (tx.status === "pending" ? "bi-clock-fill" : "bi-exclamation-triangle-fill");
+               html += '<tr>' +
+                 '<td class="title-cell">' + escapeHtml(tx.phone) + '</td>' +
+                 '<td><span class="donation-amount ' + cls + '">KES ' + escapeHtml(String(tx.amount)) + '</span></td>' +
+                 '<td><span class="status-badge status-icon ' + cls + '"><i class="bi ' + icon + ' me-1"></i>' + escapeHtml(tx.status) + '</span></td>' +
+                 '<td class="muted">' + escapeHtml(tx.mpesa_receipt || "—") + '</td>' +
+                 '<td class="muted">' + escapeHtml(tx.project_name || "—") + '</td>' +
+                 '<td class="muted">' + fmtDate(tx.created_at) + '</td></tr>';
+             });
+             tbody.innerHTML = html;
+           })
+           .catch(function () {
+             var tbody = document.getElementById("mpesaTransactionsTable");
+             if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Failed to load transactions.</td></tr>';
+           });
+       }
+
+       loadMpesaTransactions();
+       setInterval(loadMpesaTransactions, 15000);
+     }
+
+     // ============================================================
+     //  Donation Projects CRUD
+     // ============================================================
 function initProjects() {
       wireProjectHandlers();
       // Expose globals so the buttons/forms work even if an earlier init step
