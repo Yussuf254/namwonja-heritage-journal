@@ -13,6 +13,7 @@
     comments: { data: [], filtered: [], page: 1, selected: new Set() },
     messages: { data: [], filtered: [], page: 1, selected: new Set() },
     payments: { data: [], filtered: [], page: 1, selected: new Set() },
+    projects: { data: [], filtered: [], page: 1, selected: new Set() },
     media: { data: [], filtered: [], page: 1, selected: new Set() },
     categories: { data: [], filtered: [], page: 1, selected: new Set() },
     authors: { data: [], filtered: [], page: 1, selected: new Set() },
@@ -552,6 +553,7 @@ document.getElementById("storyForm").addEventListener("submit", function (e) {
       loadAdmin("comments");
       loadAdmin("messages");
       loadAdmin("payments");
+      loadAdmin("projects");
       initPlaceholderSections();
     }
 
@@ -744,6 +746,7 @@ function initPlaceholderSections() {
       else if (type === "comments") renderComments();
       else if (type === "messages") renderMessages();
       else if (type === "payments") renderPayments();
+      else if (type === "projects") renderProjects();
       else if (type === "media") renderMedia();
       else if (type === "categories") renderCategories();
       else if (type === "authors") renderPlaceholder("authorsTable", "person-badge", "Authors", "No authors yet.", "Add Author", "authors");
@@ -1054,13 +1057,14 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
         return;
       }
       var html = '<div class="table-responsive"><table class="admin-table"><thead><tr>' +
-        '<th>Phone</th><th>Amount</th><th>Status</th><th>Receipt</th><th>Date</th>' +
+        '<th>Phone</th><th>Amount</th><th>Project</th><th>Status</th><th>Receipt</th><th>Date</th>' +
         '</tr></thead><tbody>';
       rows.forEach(function (p) {
         var cls = p.status === "success" ? "success" : (p.status === "pending" ? "pending" : "failed");
         html += '<tr>' +
           '<td class="title-cell">' + escapeHtml(p.phone) + '</td>' +
           '<td>KES ' + escapeHtml(String(p.amount)) + '</td>' +
+          '<td class="muted">' + escapeHtml(p.project_name || "—") + '</td>' +
           '<td><span class="status-badge ' + cls + '">' + escapeHtml(p.status) + '</span></td>' +
           '<td class="muted">' + escapeHtml(p.mpesa_receipt || "—") + '</td>' +
           '<td class="muted">' + fmtDate(p.created_at) + '</td></tr>';
@@ -2019,7 +2023,7 @@ labels: ["Approved", "Pending"],
     //  Wire up per-section search / filter / pagination controls
     // ============================================================
     function initSectionControls() {
-      ["stories", "comments", "messages", "payments", "media", "categories", "authors", "contributors", "users"].forEach(function (type) {
+      ["stories", "comments", "messages", "payments", "projects", "media", "categories", "authors", "contributors", "users"].forEach(function (type) {
         var searchEl = document.getElementById(type + "Search");
         if (searchEl) {
           searchEl.addEventListener("input", function () { applyFilter(type); });
@@ -2258,6 +2262,7 @@ function initExports() {
     initExports();
     initShortcuts();
     initBackfillSql();
+    initProjects();
 
     onTabSwitch = function (tabName) {
       if (tabName === "dashboard") {
@@ -2266,7 +2271,8 @@ function initExports() {
       }
       if (tabName === "analytics" && typeof renderAnalyticsCharts === "function") renderAnalyticsCharts();
       if (tabName === "revenue" && typeof renderRevenueCharts === "function") renderRevenueCharts();
-if (tabName === "categories") renderCategoriesTable();
+      if (tabName === "projects") renderProjects();
+      if (tabName === "categories") renderCategoriesTable();
       if (tabName === "authors" || tabName === "contributors" || tabName === "users") renderPlaceholderSection(tabName);
       if (tabName === "roles") renderRoles();
     };
@@ -2589,6 +2595,157 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
           }, "Reset Settings");
         });
       }
+    }
+
+    // ============================================================
+    //  Donation Projects CRUD
+    // ============================================================
+    function initProjects() {
+      var newBtn = document.getElementById("newProjectBtn");
+      if (newBtn) {
+        newBtn.addEventListener("click", function (e) {
+          e.preventDefault();
+          openProjectModal(null);
+        });
+      }
+
+      var form = document.getElementById("projectForm");
+      if (form) {
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          saveProject();
+        });
+      }
+
+      var searchEl = document.getElementById("projectsSearch");
+      if (searchEl) {
+        searchEl.addEventListener("input", function () { applyFilter("projects"); });
+      }
+    }
+
+    function openProjectModal(project) {
+      var modalEl = document.getElementById("projectModal");
+      if (!modalEl) return;
+      var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+      var idEl = document.getElementById("projectId");
+      var nameEl = document.getElementById("projectName");
+      var slugEl = document.getElementById("projectSlug");
+      var descEl = document.getElementById("projectDescription");
+      var targetEl = document.getElementById("projectTarget");
+      var sortEl = document.getElementById("projectSort");
+      var statusEl = document.getElementById("projectStatus");
+      var coverEl = document.getElementById("projectCover");
+      var titleEl = document.getElementById("projectModalTitle");
+
+      if (project) {
+        if (titleEl) titleEl.textContent = "Edit Project";
+        if (idEl) idEl.value = project.id || "";
+        if (nameEl) nameEl.value = project.name || "";
+        if (slugEl) slugEl.value = project.slug || "";
+        if (descEl) descEl.value = project.description || "";
+        if (targetEl) targetEl.value = project.target_amount || "";
+        if (sortEl) sortEl.value = project.sort_order || "";
+        if (statusEl) statusEl.value = project.status || "active";
+        if (coverEl) coverEl.value = project.cover_image || "";
+      } else {
+        if (titleEl) titleEl.textContent = "New Project";
+        if (idEl) idEl.value = "";
+        if (nameEl) nameEl.value = "";
+        if (slugEl) slugEl.value = "";
+        if (descEl) descEl.value = "";
+        if (targetEl) targetEl.value = "";
+        if (sortEl) sortEl.value = "";
+        if (statusEl) statusEl.value = "active";
+        if (coverEl) coverEl.value = "";
+      }
+      modal.show();
+    }
+
+    function saveProject() {
+      var id = document.getElementById("projectId").value;
+      var name = document.getElementById("projectName").value.trim();
+      if (!name) { toast("Project name is required.", "error"); return; }
+
+      var payload = {
+        name: name,
+        slug: (document.getElementById("projectSlug").value || "").trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80),
+        description: (document.getElementById("projectDescription").value || "").trim(),
+        target_amount: Number(document.getElementById("projectTarget").value) || 0,
+        status: document.getElementById("projectStatus").value || "active",
+        sort_order: Number(document.getElementById("projectSort").value) || 0,
+        cover_image: (document.getElementById("projectCover").value || "").trim()
+      };
+
+      var method = id ? "PUT" : "POST";
+      var url = "/api/donation-projects" + (id ? "?id=" + encodeURIComponent(id) : "");
+
+      fetch(url, {
+        method: method,
+        headers: authHeaders(),
+        body: JSON.stringify(payload)
+      })
+      .then(function (r) { return r.json().then(function (data) { return { status: r.status, data: data }; }); })
+      .then(function (res) {
+        if (res.data.error) { toast(res.data.error, "error"); return; }
+        var modalEl = document.getElementById("projectModal");
+        var modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) modal.hide();
+        toast((id ? "Project updated" : "Project created") + ".", "success");
+        loadAdmin("projects");
+      })
+      .catch(function () { toast("Could not save project.", "error"); });
+    }
+
+    function renderProjects() {
+      var el = document.getElementById("projectsTableBody");
+      if (!el) return;
+      var rows = paginate("projects", state.projects.filtered);
+      if (!rows.length) {
+        el.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">No projects found.</td></tr>';
+        renderPagination("projects", state.projects.filtered.length);
+        return;
+      }
+      var html = "";
+      rows.forEach(function (p) {
+        var raised = Number(p.raised_amount) || 0;
+        var target = Number(p.target_amount) || 0;
+        var pct = p.progress_pct != null ? p.progress_pct : (target > 0 ? Math.min(100, Math.round((raised / target) * 100)) : 0);
+        var statusCls = p.status === "active" ? "approved" : (p.status === "completed" ? "success" : "pending");
+        html += '<tr>' +
+          '<td><div class="d-flex align-items-center gap-3">' +
+            (p.cover_image ? '<img src="' + escapeHtml(p.cover_image) + '" class="thumb" alt="" loading="lazy" decoding="async" />' : '') +
+            '<div><div class="title-cell">' + escapeHtml(p.name) + '</div>' +
+            '<div class="muted small">' + escapeHtml(p.slug || "") + '</div></div>' +
+          '</div></td>' +
+          '<td class="muted">' + escapeHtml(String(target)) + '</td>' +
+          '<td class="muted">' + escapeHtml(String(raised)) + '</td>' +
+          '<td><div class="admin-project-progress"><div class="admin-project-progress-bar" style="width:' + pct + '%"></div></div><small class="text-muted">' + pct + '%</small></td>' +
+          '<td><span class="status-badge ' + statusCls + '">' + escapeHtml(p.status) + '</span></td>' +
+          '<td><div class="admin-row-actions justify-content-end">' +
+            '<button class="admin-btn admin-btn-outline admin-btn-sm" data-edit-project="' + escapeHtml(p.id) + '" title="Edit"><i class="bi bi-pencil"></i></button>' +
+            '<button class="admin-btn admin-btn-danger admin-btn-sm" data-del-project="' + escapeHtml(p.id) + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+          '</div></td></tr>';
+      });
+      el.innerHTML = html;
+
+      el.querySelectorAll("[data-edit-project]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var id = b.getAttribute("data-edit-project");
+          var project = state.projects.data.find(function (p) { return p.id === id; });
+          if (project) openProjectModal(project);
+        });
+      });
+      el.querySelectorAll("[data-del-project]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var id = b.getAttribute("data-del-project");
+          confirmAction("Delete this project? Donations will be unlinked.", function () {
+            fetch("/api/donation-projects?id=" + encodeURIComponent(id), { method: "DELETE", headers: authHeaders() })
+              .then(function () { toast("Project deleted.", "success"); loadAdmin("projects"); });
+          }, "Delete Project");
+        });
+      });
+
+      renderPagination("projects", state.projects.filtered.length);
     }
 
     function showPanel() {
