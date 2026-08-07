@@ -1097,7 +1097,7 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
       var el = document.getElementById("paymentsTable");
       var rows = paginate("payments", state.payments.filtered);
       if (!rows.length) {
-        el.innerHTML = '<div class="admin-empty"><i class="bi bi-phone"></i><p>No donations yet.</p></div>';
+        el.innerHTML = '<tr><td colspan="6"><div class="admin-empty py-4"><i class="bi bi-phone"></i><p>No donations yet.</p></div></td></tr>';
         renderPagination("payments", state.payments.filtered.length);
         return;
       }
@@ -1119,9 +1119,7 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
         if (currentVal && projects.indexOf(currentVal) !== -1) projectFilterEl.value = currentVal;
       }
 
-      var html = '<div class="table-responsive"><table class="admin-table admin-table-wide"><thead><tr>' +
-        '<th style="width:140px">Phone</th><th style="width:120px">Amount</th><th>Project</th><th style="width:140px">Status</th><th>Receipt</th><th style="width:160px">Date</th>' +
-        '</tr></thead><tbody>';
+      var html = "";
       rows.forEach(function (p) {
         var cls = p.status === "success" ? "success" : (p.status === "pending" ? "pending" : "failed");
         var icon = p.status === "success" ? "bi-check-circle-fill" : (p.status === "pending" ? "bi-clock-fill" : "bi-exclamation-triangle-fill");
@@ -1133,7 +1131,6 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
           '<td class="muted">' + escapeHtml(p.mpesa_receipt || "—") + '</td>' +
           '<td class="muted">' + fmtDate(p.created_at) + '</td></tr>';
       });
-      html += '</tbody></table></div>';
       el.innerHTML = html;
       renderPagination("payments", state.payments.filtered.length);
       updateDonationStats(state.payments.data);
