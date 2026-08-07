@@ -741,6 +741,33 @@ function initPlaceholderSections() {
             if (st !== statusFilter) return false;
           }
         }
+
+        if (type === "payments") {
+          var dateFromEl = document.getElementById("paymentsDateFrom");
+          var dateToEl = document.getElementById("paymentsDateTo");
+          var projectFilterEl = document.getElementById("paymentsProjectFilter");
+          if (dateFromEl && dateFromEl.value.trim()) {
+            var fromDate = new Date(dateFromEl.value.trim());
+            if (!isNaN(fromDate.getTime())) {
+              var rowDate = new Date(row.created_at || row.date || 0);
+              if (isNaN(rowDate.getTime()) || rowDate < fromDate) return false;
+            }
+          }
+          if (dateToEl && dateToEl.value.trim()) {
+            var toDate = new Date(dateToEl.value.trim());
+            if (!isNaN(toDate.getTime())) {
+              toDate.setHours(23, 59, 59, 999);
+              var rowDate2 = new Date(row.created_at || row.date || 0);
+              if (isNaN(rowDate2.getTime()) || rowDate2 > toDate) return false;
+            }
+          }
+          if (projectFilterEl && projectFilterEl.value && projectFilterEl.value !== "all") {
+            var filterProject = projectFilterEl.value;
+            var rowProject = (row.project_name || row.project_id || "").toString().toLowerCase();
+            if (rowProject !== filterProject.toLowerCase()) return false;
+          }
+        }
+
         // Text search
         if (!query) return true;
         var haystack = "";
@@ -1074,16 +1101,35 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
         renderPagination("payments", state.payments.filtered.length);
         return;
       }
-      var html = '<div class="table-responsive"><table class="admin-table"><thead><tr>' +
-        '<th>Phone</th><th>Amount</th><th>Project</th><th>Status</th><th>Receipt</th><th>Date</th>' +
+
+      var projectFilterEl = document.getElementById("paymentsProjectFilter");
+      if (projectFilterEl) {
+        var projects = [];
+        state.payments.data.forEach(function (p) {
+          var name = (p.project_name || "").trim();
+          if (name && projects.indexOf(name) === -1) projects.push(name);
+        });
+        projects.sort();
+        var currentVal = projectFilterEl.value;
+        var optionsHtml = '<option value="all">All Projects</option>';
+        projects.forEach(function (proj) {
+          optionsHtml += '<option value="' + escapeHtml(proj) + '">' + escapeHtml(proj) + '</option>';
+        });
+        projectFilterEl.innerHTML = optionsHtml;
+        if (currentVal && projects.indexOf(currentVal) !== -1) projectFilterEl.value = currentVal;
+      }
+
+      var html = '<div class="table-responsive"><table class="admin-table admin-table-wide"><thead><tr>' +
+        '<th style="width:140px">Phone</th><th style="width:120px">Amount</th><th>Project</th><th style="width:140px">Status</th><th>Receipt</th><th style="width:160px">Date</th>' +
         '</tr></thead><tbody>';
       rows.forEach(function (p) {
         var cls = p.status === "success" ? "success" : (p.status === "pending" ? "pending" : "failed");
+        var icon = p.status === "success" ? "bi-check-circle-fill" : (p.status === "pending" ? "bi-clock-fill" : "bi-exclamation-triangle-fill");
         html += '<tr>' +
           '<td class="title-cell">' + escapeHtml(p.phone) + '</td>' +
           '<td><span class="donation-amount ' + cls + '">KES ' + escapeHtml(String(p.amount)) + '</span></td>' +
           '<td class="muted">' + escapeHtml(p.project_name || "—") + '</td>' +
-          '<td><span class="status-badge ' + cls + '">' + escapeHtml(p.status) + '</span></td>' +
+          '<td><span class="status-badge status-icon ' + cls + '"><i class="bi ' + icon + ' me-1"></i>' + escapeHtml(p.status) + '</span></td>' +
           '<td class="muted">' + escapeHtml(p.mpesa_receipt || "—") + '</td>' +
           '<td class="muted">' + fmtDate(p.created_at) + '</td></tr>';
       });
@@ -2452,6 +2498,14 @@ function updateStats() {
         var statusEl = document.getElementById(type + "StatusFilter");
         if (statusEl) {
           statusEl.addEventListener("change", function () { applyFilter(type); });
+        }
+        if (type === "payments") {
+          var dateFromEl = document.getElementById("paymentsDateFrom");
+          var dateToEl = document.getElementById("paymentsDateTo");
+          var projectFilterEl = document.getElementById("paymentsProjectFilter");
+          if (dateFromEl) dateFromEl.addEventListener("change", function () { applyFilter("payments"); });
+          if (dateToEl) dateToEl.addEventListener("change", function () { applyFilter("payments"); });
+          if (projectFilterEl) projectFilterEl.addEventListener("change", function () { applyFilter("payments"); });
         }
       });
 
