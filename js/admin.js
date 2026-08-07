@@ -2709,7 +2709,7 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
         var modal = bootstrap.Modal.getInstance(modalEl);
         if (modal) modal.hide();
         toast((id ? "Project updated" : "Project created") + ".", "success");
-        loadAdmin("projects");
+        loadProjects();
       })
       .catch(function () { toast("Could not save project.", "error"); });
     }
@@ -2758,7 +2758,7 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
           var id = b.getAttribute("data-del-project");
           confirmAction("Delete this project? Donations will be unlinked.", function () {
             fetch("/api/donation-projects?id=" + encodeURIComponent(id), { method: "DELETE", headers: authHeaders() })
-              .then(function () { toast("Project deleted.", "success"); loadAdmin("projects"); });
+              .then(function () { toast("Project deleted.", "success"); loadProjects(); });
           }, "Delete Project");
         });
       });
