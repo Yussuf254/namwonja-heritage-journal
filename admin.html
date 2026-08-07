@@ -361,6 +361,76 @@
                 </div>
               </div>
 
+              <!-- Charts Overview -->
+              <div class="admin-section-head d-flex flex-wrap align-items-center justify-content-between">
+                <div>
+                  <h3>Charts Overview</h3>
+                  <p>Visual breakdown of your content and engagement.</p>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  <select class="form-select form-select-sm admin-period-select" id="chartPeriod">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-8">
+                  <div class="admin-card p-0 dash-chart-card">
+                    <div class="p-4 pb-3 d-flex align-items-center justify-content-between">
+                      <div>
+                        <h5 class="mb-1 fw-semibold">Stories Published</h5>
+                        <p class="text-muted small mb-0">Daily publishing trend</p>
+                      </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                      <canvas id="chartStories" height="120"></canvas>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-xl-4">
+                  <div class="admin-card p-0 dash-chart-card h-100">
+                    <div class="p-4 pb-3">
+                      <h5 class="mb-1 fw-semibold">Comments Status</h5>
+                      <p class="text-muted small mb-0">Approved vs pending</p>
+                    </div>
+                    <div class="px-4 pb-4 d-flex align-items-center justify-content-center">
+                      <div style="width:100%;max-width:280px;position:relative;">
+                        <canvas id="chartComments" height="200"></canvas>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row g-4 mb-4">
+                <div class="col-12 col-xl-4">
+                  <div class="admin-card p-0 dash-chart-card h-100">
+                    <div class="p-4 pb-3">
+                      <h5 class="mb-1 fw-semibold">Donations by Status</h5>
+                      <p class="text-muted small mb-0">KES breakdown</p>
+                    </div>
+                    <div class="px-4 pb-4">
+                      <canvas id="chartDonations" height="180"></canvas>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-12 col-xl-8">
+                  <div class="admin-card p-0 dash-chart-card">
+                    <div class="p-4 pb-3 d-flex align-items-center justify-content-between">
+                      <div>
+                        <h5 class="mb-1 fw-semibold">Top Categories</h5>
+                        <p class="text-muted small mb-0">Stories per category</p>
+                      </div>
+                    </div>
+                    <div class="px-4 pb-4">
+                      <canvas id="chartCategories" height="160"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <!-- Story Performance Widget -->
               <div class="admin-section-head d-flex flex-wrap align-items-center justify-content-between">
                 <div>
@@ -1125,6 +1195,6 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="js/admin.js?v=2.4"></script>
+<script src="js/admin.js?v=2.5"></script>
 </body>
 </html>

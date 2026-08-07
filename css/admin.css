@@ -709,21 +709,15 @@ h1, h2, h3, h4, h5, h6 {
 }
 .admin-card.p-0 { border-radius: var(--admin-border-radius); }
 
-.dash-chart-card { height: 100%; display: flex; flex-direction: column; }
+.dash-chart-card { height: 100%; display: flex; flex-direction: column; transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+.dash-chart-card:hover { transform: translateY(-3px); box-shadow: var(--admin-shadow); border-color: color-mix(in srgb, var(--admin-gold) 30%, transparent); }
 .dash-chart-card-sm { max-height: 280px; }
 
 /* Chart canvases — keep them compact and tidy */
-.dash-chart-card canvas {
-  max-height: 260px;
-  width: 100% !important;
-}
-.dash-chart-card .px-4.pb-4 { flex: 1; min-height: 120px; position: relative; }
-.dash-chart-card .px-4.pb-4 canvas {
-  position: absolute;
-  inset: 0;
-  height: 100% !important;
-  max-height: 240px;
-}
+.dash-chart-card canvas { max-height: 260px; width: 100% !important; }
+.dash-chart-card .px-4.pb-4 { position: relative; }
+.dash-chart-card .chart-wrap { position: relative; width: 100%; }
+.dash-chart-card .chart-wrap.donut-wrap { max-width: 260px; margin: 0 auto; }
 .admin-chart-chip {
   display: inline-flex;
   align-items: center;

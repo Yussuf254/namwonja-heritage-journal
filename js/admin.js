@@ -1096,7 +1096,8 @@ el.querySelectorAll("[data-view]").forEach(function (b) {
     //  Stats
     // ============================================================
 function updateStats() {
-      var period = parseInt(document.getElementById("chartPeriod").value || "30", 10);
+      var periodEl = document.getElementById("chartPeriod");
+      var period = periodEl ? parseInt(periodEl.value || "30", 10) : 30;
 
       // Total stories
       var totalStories = state.stories.data.length;
@@ -1405,13 +1406,22 @@ function updateStats() {
     }
 
     // ============================================================
-    //  Charts (Chart.js)
+    //  Charts (Chart.js) — redesigned with gradients, rounded bars, and donut
     // ============================================================
     function renderCharts() {
       if (typeof Chart === "undefined") return;
       var period = parseInt(document.getElementById("chartPeriod").value || "30", 10);
       var now = new Date();
       var cutoff = new Date(now.getTime() - period * 24 * 60 * 60 * 1000);
+
+      var isDark = document.documentElement.getAttribute("data-theme") === "dark";
+      var gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(28,25,23,0.06)";
+      var tickColor = isDark ? "#9b8f7f" : "#85796b";
+      var textColor = isDark ? "#cbd5e1" : "#475569";
+
+      function chartFont(size, weight) {
+        return { family: "'Inter','Segoe UI',Arial,sans-serif", size: size || 12, weight: weight || "500" };
+      }
 
       // Stories published per day
       var storiesByDay = {};
@@ -1443,14 +1453,28 @@ function updateStats() {
         counts.push(storiesByDay[key] || 0);
       }
 
-      var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-      var gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(28,25,23,0.08)";
-      var tickColor = isDark ? "#9b8f7f" : "#85796b";
+      // Common tooltip styling
+      var tooltipStyle = {
+        backgroundColor: isDark ? "rgba(15,20,34,0.95)" : "rgba(255,255,255,0.95)",
+        titleColor: isDark ? "#f1f5f9" : "#0f172a",
+        bodyColor: isDark ? "#cbd5e1" : "#475569",
+        borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(28,25,23,0.08)",
+        borderWidth: 1,
+        cornerRadius: 10,
+        padding: 12,
+        titleFont: chartFont(13, "700"),
+        bodyFont: chartFont(12, "500"),
+        boxPadding: 4
+      };
 
-      // Stories chart
+      // Stories chart (line with gradient fill)
       var chartStoriesEl = document.getElementById("chartStories");
       if (chartStoriesEl) {
         if (charts.stories) charts.stories.destroy();
+        var ctxStories = chartStoriesEl.getContext("2d");
+        var gradStories = ctxStories.createLinearGradient(0, 0, 0, 300);
+        gradStories.addColorStop(0, "rgba(176,141,79,0.35)");
+        gradStories.addColorStop(1, "rgba(176,141,79,0.0)");
         charts.stories = new Chart(chartStoriesEl, {
           type: "line",
           data: {
@@ -1459,21 +1483,39 @@ function updateStats() {
               label: "Stories",
               data: counts,
               borderColor: "#b08d4f",
-              backgroundColor: "rgba(176,141,79,0.15)",
+              backgroundColor: gradStories,
               fill: true,
               tension: 0.4,
-              pointRadius: 3,
-              pointBackgroundColor: "#b08d4f"
+              pointRadius: 4,
+              pointBackgroundColor: "#b08d4f",
+              pointBorderColor: isDark ? "#151a2a" : "#ffffff",
+              pointBorderWidth: 2,
+              pointHoverRadius: 7,
+              borderWidth: 3
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { grid: { color: gridColor }, ticks: { color: tickColor } },
-              y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor, precision: 0 } }
-            }
+              x: {
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), maxRotation: 0, autoSkipPadding: 20 },
+                border: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), precision: 0, padding: 8 },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -1485,22 +1527,40 @@ function updateStats() {
         charts.comments = new Chart(chartCommentsEl, {
           type: "doughnut",
           data: {
-labels: ["Approved", "Pending"],
+            labels: ["Approved", "Pending"],
             datasets: [{
               data: [approved, pendingC],
               backgroundColor: ["#10b981", "#f59e0b"],
-              borderWidth: 0
+              borderColor: isDark ? "#151a2a" : "#ffffff",
+              borderWidth: 4,
+              hoverBorderColor: isDark ? "#151a2a" : "#ffffff",
+              hoverBorderWidth: 4,
+              hoverOffset: 8
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: "bottom", labels: { color: tickColor } } }
+            cutout: "68%",
+            plugins: {
+              legend: {
+                position: "bottom",
+                labels: {
+                  color: textColor,
+                  padding: 20,
+                  usePointStyle: true,
+                  pointStyleWidth: 10,
+                  font: chartFont(12, "600")
+                }
+              },
+              tooltip: tooltipStyle
+            },
+            animation: { animateRotate: true, duration: 1400, easing: "easeOutQuart" }
           }
         });
       }
 
-// Donations chart (bar)
+      // Donations chart (bar)
       var chartDonationsEl = document.getElementById("chartDonations");
       if (chartDonationsEl) {
         if (charts.donations) charts.donations.destroy();
@@ -1511,18 +1571,35 @@ labels: ["Approved", "Pending"],
             datasets: [{
               label: "KES",
               data: [donationStatus.success, donationStatus.pending, donationStatus.failed],
-              backgroundColor: ["#4ade80", "#f59e0b", "#ef4444"],
-              borderRadius: 8
+              backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
+              borderRadius: 10,
+              borderSkipped: false,
+              barPercentage: 0.55,
+              categoryPercentage: 0.7,
+              hoverBackgroundColor: ["#34d399", "#fbbf24", "#f87171"]
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { grid: { color: gridColor }, ticks: { color: tickColor } },
-              y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }
-            }
+              x: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: chartFont(12, "600") },
+                border: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), padding: 8 },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -1539,6 +1616,7 @@ labels: ["Approved", "Pending"],
         cats.sort(function (a, b) { return b.count - a.count; });
         cats = cats.slice(0, 6);
         if (charts.categories) charts.categories.destroy();
+        var catColors = ["#6366f1", "#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#b08d4f"];
         charts.categories = new Chart(chartCategoriesEl, {
           type: "bar",
           data: {
@@ -1546,19 +1624,35 @@ labels: ["Approved", "Pending"],
             datasets: [{
               label: "Stories",
               data: cats.map(function (c) { return c.count; }),
-              backgroundColor: ["#6366f1", "#8b5cf6", "#3b82f6", "#10b981", "#f59e0b", "#b08d4f"],
-              borderRadius: 8
+              backgroundColor: catColors.slice(0, cats.length),
+              borderRadius: 8,
+              borderSkipped: false,
+              barPercentage: 0.65,
+              categoryPercentage: 0.75
             }]
           },
           options: {
             indexAxis: "y",
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor, precision: 0 } },
-              y: { grid: { display: false }, ticks: { color: tickColor } }
-            }
+              x: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), precision: 0, padding: 8 },
+                border: { display: false }
+              },
+              y: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: chartFont(12, "600") },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -1669,13 +1763,34 @@ labels: ["Approved", "Pending"],
       }
 
       var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-      var gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(28,25,23,0.08)";
+      var gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(28,25,23,0.06)";
       var tickColor = isDark ? "#9b8f7f" : "#85796b";
+      var textColor = isDark ? "#cbd5e1" : "#475569";
+
+      function chartFont(size, weight) {
+        return { family: "'Inter','Segoe UI',Arial,sans-serif", size: size || 12, weight: weight || "500" };
+      }
+      var tooltipStyle = {
+        backgroundColor: isDark ? "rgba(15,20,34,0.95)" : "rgba(255,255,255,0.95)",
+        titleColor: isDark ? "#f1f5f9" : "#0f172a",
+        bodyColor: isDark ? "#cbd5e1" : "#475569",
+        borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(28,25,23,0.08)",
+        borderWidth: 1,
+        cornerRadius: 10,
+        padding: 12,
+        titleFont: chartFont(13, "700"),
+        bodyFont: chartFont(12, "500"),
+        boxPadding: 4
+      };
 
       // Page views chart
       var pvEl = document.getElementById("chartPageViews");
       if (pvEl) {
         if (charts.pageViews) charts.pageViews.destroy();
+        var ctxPv = pvEl.getContext("2d");
+        var gradPv = ctxPv.createLinearGradient(0, 0, 0, 300);
+        gradPv.addColorStop(0, "rgba(99,102,245,0.35)");
+        gradPv.addColorStop(1, "rgba(99,102,245,0.0)");
         charts.pageViews = new Chart(pvEl, {
           type: "line",
           data: {
@@ -1684,21 +1799,39 @@ labels: ["Approved", "Pending"],
               label: "Views",
               data: counts,
               borderColor: "#6366f1",
-              backgroundColor: "rgba(99,102,245,0.15)",
+              backgroundColor: gradPv,
               fill: true,
               tension: 0.4,
-              pointRadius: 3,
-              pointBackgroundColor: "#6366f1"
+              pointRadius: 4,
+              pointBackgroundColor: "#6366f1",
+              pointBorderColor: isDark ? "#151a2a" : "#ffffff",
+              pointBorderWidth: 2,
+              pointHoverRadius: 7,
+              borderWidth: 3
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { grid: { color: gridColor }, ticks: { color: tickColor } },
-              y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor, precision: 0 } }
-            }
+              x: {
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), maxRotation: 0, autoSkipPadding: 20 },
+                border: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), precision: 0, padding: 8 },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -1708,26 +1841,43 @@ labels: ["Approved", "Pending"],
       if (tpEl) {
         var topStories = state.stories.data.slice(0, 5);
         if (charts.topPages) charts.topPages.destroy();
+        var topColors = ["#6366f1", "#8b5cf6", "#3b82f6", "#10b981", "#f59e0b"];
         charts.topPages = new Chart(tpEl, {
           type: "bar",
           data: {
-            labels: topStories.map(function (s) { return (s.title || s.slug || "").slice(0, 20); }),
+            labels: topStories.map(function (s) { return (s.title || s.slug || "").slice(0, 22); }),
             datasets: [{
               label: "Views",
               data: topStories.map(function (s) { return Number(s.views) || 1; }),
-              backgroundColor: "#3b82f6",
-              borderRadius: 8
+              backgroundColor: topColors,
+              borderRadius: 8,
+              borderSkipped: false,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7
             }]
           },
           options: {
             indexAxis: "y",
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } },
-              y: { grid: { display: false }, ticks: { color: tickColor } }
-            }
+              x: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), padding: 8 },
+                border: { display: false }
+              },
+              y: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: chartFont(12, "600") },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -1767,13 +1917,39 @@ labels: ["Approved", "Pending"],
       });
 
       var isDark = document.documentElement.getAttribute("data-theme") === "dark";
-      var gridColor = isDark ? "rgba(255,255,255,0.08)" : "rgba(28,25,23,0.08)";
+      var gridColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(28,25,23,0.06)";
       var tickColor = isDark ? "#9b8f7f" : "#85796b";
+      var textColor = isDark ? "#cbd5e1" : "#475569";
+
+      function chartFont(size, weight) {
+        return { family: "'Inter','Segoe UI',Arial,sans-serif", size: size || 12, weight: weight || "500" };
+      }
+      var tooltipStyle = {
+        backgroundColor: isDark ? "rgba(15,20,34,0.95)" : "rgba(255,255,255,0.95)",
+        titleColor: isDark ? "#f1f5f9" : "#0f172a",
+        bodyColor: isDark ? "#cbd5e1" : "#475569",
+        borderColor: isDark ? "rgba(255,255,255,0.1)" : "rgba(28,25,23,0.08)",
+        borderWidth: 1,
+        cornerRadius: 10,
+        padding: 12,
+        titleFont: chartFont(13, "700"),
+        bodyFont: chartFont(12, "500"),
+        boxPadding: 4,
+        callbacks: {
+          label: function (context) {
+            return "KES " + context.parsed.y.toLocaleString();
+          }
+        }
+      };
 
       // Revenue by day chart
       var revEl = document.getElementById("chartRevenue");
       if (revEl) {
         if (charts.revenue) charts.revenue.destroy();
+        var ctxRev = revEl.getContext("2d");
+        var gradRev = ctxRev.createLinearGradient(0, 0, 0, 300);
+        gradRev.addColorStop(0, "rgba(176,141,79,0.35)");
+        gradRev.addColorStop(1, "rgba(176,141,79,0.0)");
         charts.revenue = new Chart(revEl, {
           type: "line",
           data: {
@@ -1782,21 +1958,47 @@ labels: ["Approved", "Pending"],
               label: "KES",
               data: rvCounts,
               borderColor: "#b08d4f",
-              backgroundColor: "rgba(176,141,79,0.15)",
+              backgroundColor: gradRev,
               fill: true,
               tension: 0.4,
-              pointRadius: 3,
-              pointBackgroundColor: "#b08d4f"
+              pointRadius: 4,
+              pointBackgroundColor: "#b08d4f",
+              pointBorderColor: isDark ? "#151a2a" : "#ffffff",
+              pointBorderWidth: 2,
+              pointHoverRadius: 7,
+              borderWidth: 3
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { grid: { color: gridColor }, ticks: { color: tickColor } },
-              y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }
-            }
+              x: {
+                grid: { color: gridColor, drawBorder: false },
+                ticks: { color: tickColor, font: chartFont(11, "500"), maxRotation: 0, autoSkipPadding: 20 },
+                border: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: {
+                  color: tickColor,
+                  font: chartFont(11, "500"),
+                  padding: 8,
+                  callback: function (value) {
+                    if (value >= 1000) return "KES " + (value / 1000).toFixed(1) + "k";
+                    return "KES " + value;
+                  }
+                },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -1812,18 +2014,43 @@ labels: ["Approved", "Pending"],
             datasets: [{
               label: "KES",
               data: [revStatus.success, revStatus.pending, revStatus.failed],
-              backgroundColor: ["#4ade80", "#f59e0b", "#ef4444"],
-              borderRadius: 8
+              backgroundColor: ["#10b981", "#f59e0b", "#ef4444"],
+              borderRadius: 10,
+              borderSkipped: false,
+              barPercentage: 0.55,
+              categoryPercentage: 0.7,
+              hoverBackgroundColor: ["#34d399", "#fbbf24", "#f87171"]
             }]
           },
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+              legend: { display: false },
+              tooltip: tooltipStyle
+            },
             scales: {
-              x: { grid: { color: gridColor }, ticks: { color: tickColor } },
-              y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }
-            }
+              x: {
+                grid: { display: false },
+                ticks: { color: tickColor, font: chartFont(12, "600") },
+                border: { display: false }
+              },
+              y: {
+                beginAtZero: true,
+                grid: { color: gridColor, drawBorder: false },
+                ticks: {
+                  color: tickColor,
+                  font: chartFont(11, "500"),
+                  padding: 8,
+                  callback: function (value) {
+                    if (value >= 1000) return (value / 1000).toFixed(1) + "k";
+                    return value;
+                  }
+                },
+                border: { display: false }
+              }
+            },
+            animation: { duration: 1200, easing: "easeOutQuart" }
           }
         });
       }
@@ -2618,9 +2845,20 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
     // ============================================================
     //  Donation Projects CRUD
     // ============================================================
-    function initProjects() {
+function initProjects() {
+      wireProjectHandlers();
+      // Expose globals so the buttons/forms work even if an earlier init step
+      // throws and aborts the chain before this points runs.
+      window.openProjectModal = openProjectModal;
+      window.saveProject = saveProject;
+    }
+
+    // Attach the New Project button + Save Project form handlers idempotently.
+    // Safe to call multiple times (guarded by a data attribute).
+    function wireProjectHandlers() {
       var newBtn = document.getElementById("newProjectBtn");
-      if (newBtn) {
+      if (newBtn && !newBtn.hasAttribute("data-project-wired")) {
+        newBtn.setAttribute("data-project-wired", "1");
         newBtn.addEventListener("click", function (e) {
           e.preventDefault();
           openProjectModal(null);
@@ -2628,7 +2866,8 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
       }
 
       var form = document.getElementById("projectForm");
-      if (form) {
+      if (form && !form.hasAttribute("data-project-wired")) {
+        form.setAttribute("data-project-wired", "1");
         form.addEventListener("submit", function (e) {
           e.preventDefault();
           saveProject();
@@ -2636,10 +2875,19 @@ el.querySelectorAll("[data-del-role]").forEach(function (b) {
       }
 
       var searchEl = document.getElementById("projectsSearch");
-      if (searchEl) {
+      if (searchEl && !searchEl.hasAttribute("data-project-wired")) {
+        searchEl.setAttribute("data-project-wired", "1");
         searchEl.addEventListener("input", function () { applyFilter("projects"); });
       }
     }
+
+    // Fallback wiring: run once the DOM is ready in case the main init chain
+    // was interrupted before initProjects() was reached.
+    ready(function () {
+      if (!document.getElementById("newProjectBtn") || !document.getElementById("newProjectBtn").hasAttribute("data-project-wired")) {
+        wireProjectHandlers();
+      }
+    });
 
     function openProjectModal(project) {
       var modalEl = document.getElementById("projectModal");

@@ -1,23 +1,17 @@
- 
- # Donation Project Fixes — Implementation Plan
+# TODO — Fix Donation Project Modal Save/New buttons
 
-## Goal
-Fix non-persistent donation modal data (admin edits not reflecting) and the New Project CTA not opening a form.
+## Problem
+- Saving a project in the donation modal gives no reply and throws back to the dashboard (native form submit → page reload).
+- The "New Project" button does nothing when clicked.
 
-## Root Cause
-- `js/admin.js` & `admin.html` already contain full project CRUD, but the deployed snapshot (`deployed-admin.js`) predates it and browsers may serve cached `?v=2.3` scripts without the project code.
-- `js/mpesa.js` only loads projects once on initial page load and embeds the full project JSON into a `data-project` attribute (fragile), so admin edits don't reflect on the public donation modal.
+## Root cause
+The project modal wiring lives in `initProjects()`, which runs last in the admin.js init chain.
+If it doesn't run (stale cached `admin.js?v=2.4`, or an earlier init throwing), the Save button
+submits the form natively (reload → dashboard) and the New Project button has no handler.
 
-## Plan Steps
-- [x] Bump cache-busting versions (`?v=2.3` → `?v=2.4`) in `admin.html` and `support.html`
-  - [x] `admin.html`: `css/admin.css`, `js/admin.js`, `css/about-magazine.css`
-  - [x] `support.html`: `js/mpesa.js`, `css/about-magazine.css`
-- [x] Refactor `js/mpesa.js`:
-  - [x] Store fetched projects in memory
-  - [x] Use `data-project-id` attribute + lookup instead of embedding full JSON
-  - [x] Refresh projects on `pageshow` and `visibilitychange` so admin edits reflect live
-- [x] Update `TODO.md` checkboxes
-- [x] Redeploy (`vercel --prod`) and verify end-to-end
-
-## Manual data step
-- [ ] Run `donation-projects-setup.sql` in Supabase SQL Editor (if not already done) — self-contained, includes `mpesa_transactions` table + project columns
+## Steps
+- [x] Bump cache-buster in `admin.html` from `js/admin.js?v=2.4` to `js/admin.js?v=2.5`
+- [ ] Make project init robust: expose global `openProjectModal` / `saveProject` fallbacks
+- [ ] Attach New Project button + Save Project form handlers idempotently so they always work
+- [ ] Ensure `saveProject()` gives a clear success/error toast reply and reloads the projects list
+- [ ] Verify syntax with `node --check`
