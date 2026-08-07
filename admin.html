@@ -648,11 +648,11 @@
                  <div class="row g-3 align-items-end">
                    <div class="col-12 col-md-2">
                      <label class="admin-label">Date From</label>
-                     <input type="text" class="admin-input" id="paymentsDateFrom" placeholder="YYYY-MM-DD" />
+                     <input type="text" class="form-control form-control-sm" id="paymentsDateFrom" placeholder="YYYY-MM-DD" />
                    </div>
                    <div class="col-12 col-md-2">
                      <label class="admin-label">Date To</label>
-                     <input type="text" class="admin-input" id="paymentsDateTo" placeholder="YYYY-MM-DD" />
+                     <input type="text" class="form-control form-control-sm" id="paymentsDateTo" placeholder="YYYY-MM-DD" />
                    </div>
                    <div class="col-12 col-md-2">
                      <label class="admin-label">Status</label>
@@ -676,9 +676,10 @@
                        <input type="text" class="form-control form-control-sm" id="paymentsSearch" placeholder="Phone / receipt…" />
                      </div>
                    </div>
-                   <div class="col-12 col-md-2">
-                     <button class="admin-btn admin-btn-export admin-btn-sm w-100" id="exportPayments" title="Export donations to CSV"><i class="bi bi-download"></i> Export</button>
-                   </div>
+                    <div class="col-12 col-md-2">
+                      <label class="admin-label">&nbsp;</label>
+                      <button class="admin-btn admin-btn-export admin-btn-sm w-100" id="exportPayments" title="Export donations to CSV"><i class="bi bi-download"></i> Export</button>
+                    </div>
                  </div>
                </div>
 
@@ -714,9 +715,18 @@
                      <option value="90">Last 90 days</option>
                    </select>
                  </div>
-               </div>
-               <div class="row g-4 mb-4" id="projectChartsRow"></div>
-             </section>
+                </div>
+                <div class="row g-4 mb-4" id="projectChartsRow">
+                  <div class="col-12">
+                    <div class="admin-card p-0">
+                      <div class="admin-empty py-4">
+                        <i class="bi bi-bullseye"></i>
+                        <p>Loading project charts...</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
 
           <!-- Projects -->
             <section id="tab-projects" class="admin-section" data-header-icon="bi bi-bullseye" data-header-title="Donation Projects" data-header-desc="Manage fundraising projects and targets.">

@@ -1917,6 +1917,7 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
   color: var(--admin-bronze);
   margin-bottom: 8px;
+  display: block;
 }
 #tab-payments .filter-card .form-control,
 #tab-payments .filter-card .form-select {
@@ -1924,8 +1925,10 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--admin-line);
   background: var(--admin-paper);
   font-size: 0.875rem;
-  padding: 10px 14px;
+  padding: 8px 14px;
   color: var(--admin-ink);
+  height: 38px;
+  line-height: 1.4;
 }
 #tab-payments .filter-card .form-control:focus,
 #tab-payments .filter-card .form-select:focus {
@@ -1939,7 +1942,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 #tab-payments .filter-card .admin-btn {
   height: 38px;
-  margin-top: 28px;
+}
+#tab-payments .filter-card .input-group {
+  height: 38px;
+}
+#tab-payments .filter-card .input-group .form-control {
+  height: 38px;
 }
 
 /* Pagination */

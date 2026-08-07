@@ -710,6 +710,10 @@ function initPlaceholderSections() {
           updateStats();
           renderCharts();
           renderMedia();
+          if (type === "payments") {
+            updateDonationStats(state.payments.data);
+            renderProjectCharts();
+          }
         })
         .catch(function (e) { console.error("[admin] loadAdmin failed:", e); toast("Failed to load " + type, "error"); });
     }
@@ -2133,7 +2137,13 @@ function updateStats() {
     }
 
     function renderProjectCharts() {
-      if (typeof Chart === "undefined") return;
+      if (typeof Chart === "undefined") {
+        var container = document.getElementById("projectChartsRow");
+        if (container) {
+          container.innerHTML = '<div class="col-12"><div class="admin-empty"><i class="bi bi-bullseye"></i><p>Chart library not loaded. Please refresh the page.</p></div></div>';
+        }
+        return;
+      }
       var period = parseInt(document.getElementById("projectChartPeriod").value || "30", 10);
       var container = document.getElementById("projectChartsRow");
       if (!container) return;
@@ -2270,12 +2280,13 @@ function updateStats() {
             });
           });
         })
-        .catch(function () {
+        .catch(function (err) {
+          console.error("[admin] renderProjectCharts failed:", err);
           container.innerHTML = '<div class="col-12"><div class="admin-empty"><i class="bi bi-bullseye"></i><p>Failed to load project charts.</p></div></div>';
         });
     }
 
-    function filterMedia(media) {
+    function renderProjects() {
       var query = "";
       var searchEl = document.getElementById("mediaSearch");
       if (searchEl) query = searchEl.value.trim().toLowerCase();
