@@ -553,8 +553,26 @@ document.getElementById("storyForm").addEventListener("submit", function (e) {
       loadAdmin("comments");
       loadAdmin("messages");
       loadAdmin("payments");
-      loadAdmin("projects");
+      loadProjects();
       initPlaceholderSections();
+    }
+
+    function loadProjects() {
+      var el = document.getElementById("projectsTableBody");
+      if (el) el.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Loading projects…</td></tr>';
+      fetch("/api/donation-projects?all=1", { headers: authHeaders() })
+        .then(function (r) { return r.json().then(function (data) { return { status: r.status, data: data }; }); })
+        .then(function (res) {
+          if (res.data.error) { toast(res.data.error, "error"); return; }
+          state.projects.data = res.data || [];
+          state.projects.filtered = state.projects.data;
+          state.projects.page = 1;
+          renderProjects();
+        })
+        .catch(function () {
+          toast("Failed to load projects.", "error");
+          if (el) el.innerHTML = '<tr><td colspan="6" class="text-center py-4 text-muted">Failed to load projects.</td></tr>';
+        });
     }
 
 function initPlaceholderSections() {
@@ -2271,7 +2289,7 @@ function initExports() {
       }
       if (tabName === "analytics" && typeof renderAnalyticsCharts === "function") renderAnalyticsCharts();
       if (tabName === "revenue" && typeof renderRevenueCharts === "function") renderRevenueCharts();
-      if (tabName === "projects") renderProjects();
+      if (tabName === "projects") loadProjects();
       if (tabName === "categories") renderCategoriesTable();
       if (tabName === "authors" || tabName === "contributors" || tabName === "users") renderPlaceholderSection(tabName);
       if (tabName === "roles") renderRoles();
