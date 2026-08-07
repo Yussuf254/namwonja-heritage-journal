@@ -2385,13 +2385,13 @@ function updateStats() {
         e.preventDefault();
         var q = document.getElementById("adminSearch").value.trim();
         if (!q) return;
-        // Search in all sections, activate the first tab that has a match
-        ["stories", "comments", "messages", "payments"].forEach(function (type) {
+        var sections = ["stories", "comments", "messages", "payments", "projects", "media", "categories", "authors", "contributors", "users"];
+        sections.forEach(function (type) {
           var searchEl = document.getElementById(type + "Search");
           if (searchEl) searchEl.value = q;
         });
         var found = false;
-        ["stories", "comments", "messages", "payments"].forEach(function (type) {
+        sections.forEach(function (type) {
           if (found) return;
           if (filterRows(type).length) {
             activateTab(type);
