@@ -1551,6 +1551,51 @@ a:hover { color: var(--mag-gold); }
 }
 
 /* --------------------------------------------------------------------------
+   Mobile responsiveness hardening (small screens)
+   -------------------------------------------------------------------------- */
+@media (max-width: 991px) {
+  .mag-toc nav { gap: 2px; }
+  .mag-toc a { padding: 9px 10px; flex: 0 1 auto; }
+  .mag-toc-share, .mag-share-row { width: 100%; }
+}
+
+@media (max-width: 767px) {
+  .mag-story-meta { letter-spacing: 1.2px; }
+  .mag-share-row { justify-content: center; }
+  .mag-toc-share { text-align: center; }
+  .mag-story-hero-row .mag-kicker { margin-bottom: 16px; }
+}
+
+@media (max-width: 575px) {
+  .mag-byline { letter-spacing: 0.8px; }
+  .mag-profile-role { white-space: normal; line-height: 1.5; }
+  .mag-glass-note { padding: 22px 20px; }
+  .mag-story-figure, .mag-profile-photo { width: 100%; }
+  .mag-story-figure img, .mag-profile-photo img { width: 100%; }
+  .mag-toc { padding: 20px 16px; }
+  .mag-toc a { font-size: 12.5px; }
+  .mag-toc a .toc-num { font-size: 10px; }
+}
+
+@media (max-width: 400px) {
+  body { overflow-x: hidden; }
+  .mag-hero h1 { font-size: 1.9rem; }
+  .mag-story-hero h1 { font-size: 1.7rem; }
+  .mag-profile-info h1 { font-size: 1.7rem; }
+  .mag-section-head h2 { font-size: 1.6rem; }
+  .mag-member-body h3 { font-size: 1.4rem; }
+  .mag-member-role { font-size: 10.5px; letter-spacing: 1.6px; }
+  .mag-story-card-body h3 { font-size: 1.1rem; }
+  .mag-cta-card h2 { font-size: 1.4rem; }
+  .mag-article h2 { font-size: 1.5rem; }
+  .mag-pullquote { font-size: 1.2rem; }
+  .mag-profile-role { font-size: 10.5px; letter-spacing: 1.8px; padding: 7px 12px; }
+  .mag-byline { font-size: 10.5px; }
+  .mag-story-meta { font-size: 10px; }
+  .mag-container { padding-left: 14px; padding-right: 14px; }
+}
+
+/* --------------------------------------------------------------------------
    Contact & Support page — extra mobile responsiveness
    -------------------------------------------------------------------------- */
 @media (max-width: 991px) {
